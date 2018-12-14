@@ -1,0 +1,10 @@
+# This is Git's per-user configuration file.
+[user]
+# Please adapt and uncomment the following lines:
+name = Enda Phelan
+email = ephelan@redhat.com
+
+[alias]
+c = commit
+cl = clone
+st = status
