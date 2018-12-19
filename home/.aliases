@@ -1,0 +1,13 @@
+alias cgh="cd ~/code/src/github.com"
+alias cggh="cd ~/go/src/github.com"
+
+alias sz="source ~/.zshrc"
+alias vz="vim ~/.zshrc"
+
+alias vs="code ."
+
+alias rm='rm -i'
+alias cp='cp -i'
+alias mv='mv -i'
+
+alias alaconf="vim $HOME/.config/alacritty/alacritty.yml"

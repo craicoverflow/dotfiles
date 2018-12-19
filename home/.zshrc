@@ -104,8 +104,10 @@ source $ZSH/oh-my-zsh.sh
 # alias zshconfig="mate ~/.zshrc"
 # alias ohmyzsh="mate ~/.oh-my-zsh"
 
+# Load secret vars
 . ~/.secrets
 
+# Load environment variables
 . ~/.envs
 
 # Load aliases
