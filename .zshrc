@@ -104,14 +104,15 @@ source $ZSH/oh-my-zsh.sh
 # alias zshconfig="mate ~/.zshrc"
 # alias ohmyzsh="mate ~/.oh-my-zsh"
 
-# Load secret vars
-. ~/.secrets
-
-# Load environment variables
-. ~/.envs
-
 # Load aliases
 . ~/.aliases
+
+# # Load secret vars
+. ~/.secrets
+
+# # Load environment variables
+. ~/.envs
+
 
 # Hide username@hostname from terminal
 prompt_context() {}

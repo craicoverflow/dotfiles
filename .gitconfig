@@ -5,6 +5,7 @@ name = Enda Phelan
 email = ephelan@redhat.com
 
 [alias]
+g = git
 c = commit
 cl = clone
 st = status
