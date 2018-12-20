@@ -1,7 +1,7 @@
-export GOPATH="~/go/src"
-export CODEPATH="~/code/src"
+export GOPATH="$HOME/go"
+export CODEPATH="$HOME/code/src"
 
-PATH="$HOME/.local/bin:$HOME/bin:$PATH"
+PATH="$HOME/.local/bin:$HOME/bin:$GOPATH/bin:$PATH"
 export PATH
 
 export NVM_DIR="$HOME/.nvm"
