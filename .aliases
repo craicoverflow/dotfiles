@@ -10,4 +10,9 @@ alias rm='rm -i'
 alias cp='cp -i'
 alias mv='mv -i'
 
-alias alaconf="vim $HOME/.config/alacritty/alacritty.yml"
+# Git
+alias gpu="git push"
+alias gam="git commit --amend"
+
+alias ms="minishift"
+alias osk="operator-sdk"

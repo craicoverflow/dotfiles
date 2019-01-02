@@ -1,11 +1,34 @@
 # This is Git's per-user configuration file.
 [user]
 # Please adapt and uncomment the following lines:
-name = Enda Phelan
-email = ephelan@redhat.com
+    name = Enda Phelan
+    email = ephelan@redhat.com
+
+[color]
+    ui = auto
 
 [alias]
-g = git
-c = commit
-cl = clone
-st = status
+    # Short aliases
+    a = add
+    b = branch
+    c = commit
+    co = checkout
+    cl = clone
+    d = diff
+    f = fetch
+    g = git
+    p = push
+    pl = pull
+    r = remote
+    s = status
+    rb = rebase
+    rs = reset
+    l = log
+    rm = remote
+
+    # Longer aliases
+    aa = add .
+    ap = add --patch
+    au = add --update
+[credential]
+	helper = cache
