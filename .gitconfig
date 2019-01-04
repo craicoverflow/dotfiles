@@ -33,4 +33,4 @@
 [credential]
 	helper = cache
 [core]
-	pager = cat
+	pager = less
