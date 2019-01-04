@@ -6,7 +6,6 @@
 
 [color]
     ui = auto
-
 [alias]
     # Short aliases
     a = add
@@ -28,7 +27,10 @@
 
     # Longer aliases
     aa = add .
+    ca = commit --amend
     ap = add --patch
     au = add --update
 [credential]
 	helper = cache
+[core]
+	pager = cat
