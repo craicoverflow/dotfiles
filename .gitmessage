@@ -1,0 +1,12 @@
+fix(parsing): fixed a bug in our parser (AEROGEAR-1234)
+
+# <type>[optional scope]: <description> [issue reference**]
+ 
+# [optional body]
+
+# [optional footer]
+
+# Examples:
+
+# fix(parsing): fixed a bug in our parser (RHMAP-1234)
+# feat(parser): we now have a parser (FH-3456)

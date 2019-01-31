@@ -33,4 +33,7 @@
 [credential]
 	helper = cache
 [core]
-	pager = less
+	pager = less -F -X
+
+[commit]
+    template = ~/.gitmessage
