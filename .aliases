@@ -4,6 +4,8 @@ alias cggh="cd ~/go/src/github.com"
 alias sz="source ~/.zshrc"
 alias vz="vim ~/.zshrc"
 
+alias h="history"
+
 alias vs="code ."
 
 alias rm='rm -i'
@@ -16,6 +18,9 @@ alias gam="git commit --amend"
 
 alias ms="minishift"
 alias osk="operator-sdk"
+
+# Chrome remote debug mode
+alias chrome="/usr/bin/google-chrome --remote-debugging-port=9222 &"
 
 eval $(thefuck --alias)
 # You can use whatever you want as an alias, like for Mondays:
