@@ -1,5 +1,9 @@
 # If you come from bash you might have to change your $PATH.# export PATH=$HOME/bin:/usr/local/bin:$PATH
 export PATH=/usr/lib/lightdm/lightdm:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/home/endaphelan/.local/bin:/usr/local/go/bin:$GOPATH/bin
+export ANDROID_HOME=$HOME/Android/Sdk
+export PATH=$PATH:$ANDROID_HOME/tools¬
+export PATH=$PATH:$ANDROID_HOME/platform-tools
+
 # Path to your oh-my-zsh installation.
 export ZSH="/home/endaphelan/.oh-my-zsh"
 
