@@ -2,6 +2,11 @@ export GOPATH="$HOME/go"
 export CODEPATH="$HOME/code/src"
 
 PATH="$HOME/.local/bin:$HOME/bin:$GOPATH/bin:$PATH"
+export PATH=$PATH:$ANDROID_HOME/emulator
+export PATH=$PATH:$ANDROID_HOME/tools
+export PATH=$PATH:$ANDROID_HOME/tools/bin
+export PATH=$PATH:$ANDROID_HOME/platform-tools
+
 export PATH
 
 export NVM_DIR="$HOME/.nvm"
