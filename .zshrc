@@ -1,10 +1,9 @@
 # If you come from bash you might have to change your $PATH.# export PATH=$HOME/bin:/usr/local/bin:$PATH
-export PATH=/usr/lib/lightdm/lightdm:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/home/endaphelan/.local/bin:/usr/local/go/bin:$GOPATH/bin
+export PATH=/usr/lib/lightdm/lightdm:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/home/endaphelan/.local/bin
 export ANDROID_HOME=$HOME/Android/Sdk
 export PATH=$PATH:$ANDROID_HOME/tools
 export PATH=$PATH:$ANDROID_HOME/platform-tools
 export PATH=~/.npm-global/bin:$PATH
-
 
 # Path to your oh-my-zsh installation.
 export ZSH="/home/endaphelan/.oh-my-zsh"
@@ -15,9 +14,6 @@ export TERM="xterm-256color"
 # load a random theme each time oh-my-zsh is loaded, in which case,
 # to know which specific one was loaded, run: echo $RANDOM_THEME
 # See https://github.com/robbyrussell/oh-my-zsh/wiki/Themes
-ZSH_THEME="agnoster"
-#ZSH_THEME="powerlevel9k/powerlevel9k"
-# ZSH_THEME="awesomepanda"
 
 # Set list of themes to pick from when loading at random
 # Setting this variable when ZSH_THEME=random will cause zsh to load

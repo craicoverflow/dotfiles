@@ -1,9 +1,10 @@
 #!/bin/sh
 
+# delete any old versions of Go
+sudo rm -rf /usr/local/go
+
 cd /tmp
 
-wget https://dl.google.com/go/go1.12.1.linux-386.tar.gz
+wget https://dl.google.com/go/go1.12.1.linux-amd64.tar.gz
 
-tar -xvf go1.12.1.linux-386.tar.gz
-
-mv go /usr/local
+tar -C /usr/local -xzf go1.12.1.linux-amd64.tar.gz
