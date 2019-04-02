@@ -3,6 +3,8 @@ export PATH=/usr/lib/lightdm/lightdm:/usr/local/sbin:/usr/local/bin:/usr/sbin:/u
 export ANDROID_HOME=$HOME/Android/Sdk
 export PATH=$PATH:$ANDROID_HOME/tools
 export PATH=$PATH:$ANDROID_HOME/platform-tools
+export PATH=~/.npm-global/bin:$PATH
+
 
 # Path to your oh-my-zsh installation.
 export ZSH="/home/endaphelan/.oh-my-zsh"
@@ -13,7 +15,7 @@ export TERM="xterm-256color"
 # load a random theme each time oh-my-zsh is loaded, in which case,
 # to know which specific one was loaded, run: echo $RANDOM_THEME
 # See https://github.com/robbyrussell/oh-my-zsh/wiki/Themes
-#ZSH_THEME="agnoster"
+ZSH_THEME="agnoster"
 #ZSH_THEME="powerlevel9k/powerlevel9k"
 # ZSH_THEME="awesomepanda"
 
@@ -75,6 +77,9 @@ plugins=(
   zsh-syntax-highlighting
   zsh-autosuggestions
 )
+
+fpath+=('$PWD/functions')
+fpath+=('/home/endaphelan/.npm-global/lib/node_modules/pure-prompt/functions')
 
 source $ZSH/oh-my-zsh.sh
 
