@@ -74,7 +74,6 @@ plugins=(
   docker
   zsh-syntax-highlighting
   zsh-autosuggestions
-  golang
 )
 
 source $ZSH/oh-my-zsh.sh
