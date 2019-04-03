@@ -37,3 +37,6 @@
 
 [commit]
     template = ~/.gitmessage
+
+[remote "upstream"]
+    fetch = +refs/pull/*/head:refs/pull/upstream/*
