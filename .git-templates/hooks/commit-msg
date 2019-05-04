@@ -1,0 +1,14 @@
+#!/bin/sh
+
+function build_regex() {
+  regexp="^(revert: )?(feat|fix|docs|style|refactor|perf|test|chore)(\(.+\))?: .{1,50}"
+}
+
+msg=$(cat $1)
+
+build_regex
+
+if [[ ! $msg =~ $regexp ]]; then
+  echo "Invalid commit message"
+  exit 1
+fi

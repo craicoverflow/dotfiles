@@ -123,3 +123,5 @@ prompt_context() {}
 
 autoload -U promptinit; promptinit
 prompt pure
+
+
