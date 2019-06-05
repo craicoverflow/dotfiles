@@ -42,10 +42,15 @@ systemctl status plexmediaserver.service
 # Ruby
 dnf install ruby ruby-wdevel @development-tools -y
 
-sudo dnf install redhat-rpm-config
+dnf install redhat-rpm-config -y
 
 # Jekyll
 gem install jekyll bundler
 
 # increase amount of inotify watchers
 echo fs.inotify.max_user_watches=524288 | sudo tee -a /etc/sysctl.conf && sudo sysctl -p
+
+dnf install jq -y
+
+# set up symlinks
+./symlinks.sh

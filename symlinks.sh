@@ -7,9 +7,11 @@ ln -sf $PWD/.envs $HOME/.envs
 ln -sf $PWD/.gitconfig $HOME/.gitconfig
 ln -sf $PWD/.gitmessage $HOME/.gitmessage
 ln -sf $PWD/.tmux.conf $HOME/.tmux.conf
+ln -sf $PWD/.commit-msg.json $HOME/.commit-msg.json
+ln -sf $PWD/.git-templates $HOME/.git-templates
 
 # Symlink startup script
-ln -sf $PWD/init.d/startup.sh /etc/init.d/startup
+sudo ln -sf $PWD/init.d/startup.sh /etc/init.d/startup
 
 if [ -f $PWD/.secrets ]; then
     ln -sf $PWD/.secrets $HOME/.secrets
