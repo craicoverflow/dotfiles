@@ -8,7 +8,10 @@ ln -sf $PWD/.gitconfig $HOME/.gitconfig
 ln -sf $PWD/.gitmessage $HOME/.gitmessage
 ln -sf $PWD/.tmux.conf $HOME/.tmux.conf
 ln -sf $PWD/.commit-msg.json $HOME/.commit-msg.json
-ln -sf $PWD/.git-templates $HOME/.git-templates
+
+# set up global Git hooks
+mkdir -p ~/.git-templates
+ln -sf $PWD/.git-templates/hooks $HOME/.git-templates/hooks
 
 # Symlink startup script
 sudo ln -sf $PWD/init.d/startup.sh /etc/init.d/startup
