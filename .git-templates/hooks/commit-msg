@@ -30,7 +30,7 @@ function build_regex() {
 
   regexp="${regexp})(\(.+\))?: "
 
-  regexp="${regexp}.{$min_length,$max_length}"
+  regexp="${regexp}.{$min_length,$max_length}$"
 }
 
 # get the first line of the commit message
