@@ -33,7 +33,8 @@ function build_regex() {
   regexp="${regexp}.{$min_length,$max_length}"
 }
 
-msg=$(cat $1)
+# get the first line of the commit message
+msg=$(head -1 $1)
 
 build_regex
 
