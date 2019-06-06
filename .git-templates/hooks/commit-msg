@@ -1,10 +1,17 @@
 #!/bin/sh
 
 function set_config_values() {
-  revert=$(jq -r .revert $HOME/.commit-msg.json)
-  types=($(jq -r '.types[]' $HOME/.commit-msg.json))
-  min_length=$(jq -r .length.min $HOME/.commit-msg.json)
-  max_length=$(jq -r .length.max $HOME/.commit-msg.json)
+  message_config=$HOME/.commit-msg.json
+
+  if [ ! -f $message_config ]; then
+    echo -e "\n\e[1m\e[31m[CONFIG FILE MISSING]"
+    exit 2
+  fi
+
+  revert=$(jq -r .revert $message_config)
+  types=($(jq -r '.types[]' $message_config))
+  min_length=$(jq -r .length.min $message_config)
+  max_length=$(jq -r .length.max $message_config)
 }
 
 function build_regex() {
