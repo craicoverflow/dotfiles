@@ -10,7 +10,8 @@ ln -sf $PWD/.tmux.conf $HOME/.tmux.conf
 ln -sf $PWD/.commit-msg.json $HOME/.commit-msg.json
 
 # set up global Git hooks
-mkdir -p ~/.git-templates
+rm -rf $HOME/.git-templates
+mkdir -p $HOME/.git-templates
 ln -sf $PWD/.git-templates/hooks $HOME/.git-templates/hooks
 
 # Symlink startup script
