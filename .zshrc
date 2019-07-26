@@ -117,6 +117,10 @@ source $ZSH/oh-my-zsh.sh
 # # Load environment variables
 . ~/.envs
 
+# auto completions
+source <(oc completion zsh)
+source <(kubectl completion zsh)
+
 
 # Hide username@hostname from terminal
 prompt_context() {}

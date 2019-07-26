@@ -3,6 +3,7 @@
 # Please adapt and uncomment the following lines:
     name = Enda Phelan
     email = ephelan@redhat.com
+	signingkey = BA60DFE50B7CD95C
 
 [color]
     ui = auto
