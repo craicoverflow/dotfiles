@@ -7,29 +7,29 @@
 [color]
     ui = auto
 [alias]
-    # Short aliases
-    a = add
-    b = branch
-    c = commit
-    co = checkout
-    cl = clone
-    d = diff
-    f = fetch
-    g = git
-    p = push
-    pl = pull
-    r = remote
-    s = status
-    rb = rebase
-    rs = reset
-    l = log
-    rm = remote
+    # one-line log
+    l = log --pretty=format:"%C(yellow)%h\\ %ad%Cred%d\\ %Creset%s%Cblue\\ [%cn]" --decorate --date=short
 
-    # Longer aliases
-    aa = add .
-    ca = commit --amend
-    ap = add --patch
-    au = add --update
+    a = add
+    ap = add -p
+    c = commit --verbose
+    ca = commit -a --verbose
+    cm = commit -m
+    cam = commit -a -m
+    m = commit --amend --verbose
+
+    d = diff
+    ds = diff --stat
+    dc = diff --cached
+
+    s = status -s
+    co = checkout
+    cob = checkout -b
+    # list branches sorted by last modified
+    b = "!git for-each-ref --sort='-authordate' --format='%(authordate)%09%(objectname:short)%09%(refname)' refs/heads | sed -e 's-refs/heads/--'"
+
+    # list aliases
+    la = "!git config -l | grep alias | cut -c 7-"
 [credential]
 	helper = cache
 [core]
@@ -40,5 +40,7 @@
 
 [remote "upstream"]
     fetch = +refs/pull/*/head:refs/pull/upstream/*
+#[init]
+#	templatedir = ~/.git-templates
 [init]
 	templatedir = ~/.git-templates

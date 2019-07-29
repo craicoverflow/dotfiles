@@ -125,3 +125,4 @@ autoload -U promptinit; promptinit
 prompt pure
 
 
+alias ld='lazydocker'
