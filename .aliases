@@ -23,8 +23,9 @@ alias osk="operator-sdk"
 alias chrome="/usr/bin/google-chrome --remote-debugging-port=9222 &"
 
 eval $(thefuck --alias)
-# You can use whatever you want as an alias, like for Mondays:
-eval $(thefuck --alias FUCK)
 
 # hub
 eval "$(hub alias -s)"
+
+# docker
+alias ld='lazydocker'
