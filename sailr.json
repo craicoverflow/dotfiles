@@ -13,6 +13,7 @@
         "perf",
         "refactor",
         "style",
-        "test"
+        "test",
+        "chore"
     ]
 }
