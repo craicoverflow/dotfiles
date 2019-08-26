@@ -4,6 +4,7 @@ export ANDROID_HOME=$HOME/Android/Sdk
 export PATH=$PATH:$ANDROID_HOME/tools
 export PATH=$PATH:$ANDROID_HOME/platform-tools
 export PATH=~/.npm-global/bin:$PATH
+export PATH=$PATH:/home/endaphelan/.bin/flutter/bin
 
 # Path to your oh-my-zsh installation.
 export ZSH="/home/endaphelan/.oh-my-zsh"
@@ -117,11 +118,6 @@ source $ZSH/oh-my-zsh.sh
 # # Load environment variables
 . ~/.envs
 
-# auto completions
-source <(oc completion zsh)
-source <(kubectl completion zsh)
-
-
 # Hide username@hostname from terminal
 prompt_context() {}
 
@@ -130,3 +126,7 @@ prompt pure
 
 
 alias ld='lazydocker'
+
+#THIS MUST BE AT THE END OF THE FILE FOR SDKMAN TO WORK!!!
+export SDKMAN_DIR="/home/endaphelan/.sdkman"
+[[ -s "/home/endaphelan/.sdkman/bin/sdkman-init.sh" ]] && source "/home/endaphelan/.sdkman/bin/sdkman-init.sh"

@@ -1,4 +1,5 @@
 #!/bin/bash
 
-# Open Chrome with remote debugging enabled
-/usr/bin/google-chrome --remote-debugging-port=9222 &
+# completions
+source <(oc completion zsh)
+source <(kubectl completion zsh)

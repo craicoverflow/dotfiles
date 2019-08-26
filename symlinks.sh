@@ -2,8 +2,8 @@
 
 # Symlink dotfiles
 ln -sf $PWD/.zshrc $HOME/.zshrc
-ln -sf $PWD/.aliases $HOME/.aliases
-ln -sf $PWD/.envs $HOME/.envs
+ln -sf $PWD/.aliases.sh $HOME/.aliases
+ln -sf $PWD/.envs.sh $HOME/.envs
 ln -sf $PWD/.gitconfig $HOME/.gitconfig
 ln -sf $PWD/.gitmessage $HOME/.gitmessage
 ln -sf $PWD/.tmux.conf $HOME/.tmux.conf
@@ -15,8 +15,9 @@ mkdir -p $HOME/.git-templates
 ln -sf $PWD/.git-templates/hooks $HOME/.git-templates/hooks
 
 # Symlink startup script
+chmod +x $PWD/init.d/startup.sh
 sudo ln -sf $PWD/init.d/startup.sh /etc/init.d/startup
 
-if [ -f $PWD/.secrets ]; then
-    ln -sf $PWD/.secrets $HOME/.secrets
+if [ -f $PWD/.secrets.sh ]; then
+    ln -sf $PWD/.secrets.sh $HOME/.secrets
 fi
