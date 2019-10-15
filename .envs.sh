@@ -31,3 +31,5 @@ export MOBILE_DEVELOPER_CONSOLE_OPERATOR=$GO/src/github.com/aerogear/mobile-deve
 # mobile security service
 export MOBILE_SECURITY_SERVICE=$GOPATH/src/github.com/aerogear/mobile-security-service
 export MOBILE_SECURITY_SERVICE_OPERATOR=$GOPATH/src/github.com/aerogear/mobile-security-service-operator
+
+export DOTFILES=$CODE/src/github.com/craicoverflow/dotfiles

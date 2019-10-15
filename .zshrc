@@ -76,7 +76,7 @@ plugins=(
 )
 
 fpath+=('$PWD/functions')
-fpath+=('/home/endaphelan/.npm-global/lib/node_modules/pure-prompt/functions')
+fpath+=("$HOME/.zsh/pure")
 
 source $ZSH/oh-my-zsh.sh
 
@@ -130,3 +130,20 @@ alias ld='lazydocker'
 #THIS MUST BE AT THE END OF THE FILE FOR SDKMAN TO WORK!!!
 export SDKMAN_DIR="/home/endaphelan/.sdkman"
 [[ -s "/home/endaphelan/.sdkman/bin/sdkman-init.sh" ]] && source "/home/endaphelan/.sdkman/bin/sdkman-init.sh"
+export PATH=~/anaconda3/bin:/home/endaphelan/anaconda3/bin:/home/endaphelan/.nvm/versions/node/v10.16.3/bin:/home/endaphelan/.local/bin:/home/endaphelan/bin:/home/endaphelan/go/bin:/home/endaphelan/.npm-global/bin:/usr/lib/lightdm/lightdm:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/home/endaphelan/.local/bin:/home/endaphelan/Android/Sdk/tools:/home/endaphelan/Android/Sdk/platform-tools:/home/endaphelan/.bin/flutter/bin:/home/endaphelan/Android/Sdk/emulator:/home/endaphelan/Android/Sdk/tools:/home/endaphelan/Android/Sdk/tools/bin:/home/endaphelan/Android/Sdk/platform-tools:/usr/local/go/bin:/home/endaphelan/.rvm/bin
+
+# >>> conda initialize >>>
+# !! Contents within this block are managed by 'conda init' !!
+__conda_setup="$('/home/endaphelan/anaconda3/bin/conda' 'shell.zsh' 'hook' 2> /dev/null)"
+if [ $? -eq 0 ]; then
+    eval "$__conda_setup"
+else
+    if [ -f "/home/endaphelan/anaconda3/etc/profile.d/conda.sh" ]; then
+        . "/home/endaphelan/anaconda3/etc/profile.d/conda.sh"
+    else
+        export PATH="/home/endaphelan/anaconda3/bin:$PATH"
+    fi
+fi
+unset __conda_setup
+# <<< conda initialize <<<
+
