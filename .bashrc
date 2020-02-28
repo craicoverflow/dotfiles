@@ -16,3 +16,4 @@ export PATH
 # export SYSTEMD_PAGER=
 
 # User specific aliases and functions
+alias config='/usr/bin/git --git-dir=$HOME/.cfg/ --work-tree=$HOME'
