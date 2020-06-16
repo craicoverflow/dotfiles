@@ -23,6 +23,8 @@
     ds = diff --stat
     dc = diff --cached
 
+    pf = push --force
+
     s = status -s
     co = checkout
     cob = checkout -b
@@ -35,6 +37,7 @@
 	helper = cache
 [core]
 	pager = less -F -X
+	editor = code --wait
 
 [commit]
     template = ~/.gitmessage
