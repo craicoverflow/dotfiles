@@ -21,16 +21,26 @@ breww() {
   brew "$@"
 }
 
+# Install nvm
+if ! does_binary_exist "nvm"
+then
+  curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.1/install.sh | bash
+  source $HOME/.zshrc
+
+  echo "Installing Node.js"
+  nvm install --lts
+fi
+
 echo "Setting up Neovim..."
 breww install neovim
 mkdir -p $HOME/.config
 ln -sfn "$(pwd)/nvim" $HOME/.config
+nvim +'PlugInstall --sync' +qa
 
 echo "Setting up vim-plug..."
 # Install vim-plug package manager
 sh -c 'curl -fLo "${XDG_DATA_HOME:-$HOME/.local/share}"/nvim/site/autoload/plug.vim --create-dirs \
        https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim'
-vim +'PlugInstall --sync' +qa
 
 echo "Installing 'Inconsolata Mono Nerd Font'..."
 cd $HOME/Library/Fonts && curl -fLo "Inconsolata Mono for Powerline Nerd Font Complete.otf" https://github.com/ryanoasis/nerd-fonts/blob/master/patched-fonts/Inconsolata/complete/Inconsolata%20Regular%20Nerd%20Font%20Complete%20Mono.otf?raw=true
