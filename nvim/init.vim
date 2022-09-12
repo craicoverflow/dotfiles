@@ -16,7 +16,6 @@ set title
 set timeoutlen=0
 set wildmenu
 
-colorscheme gruvbox
 let g:airline_theme='gruvbox'
 let g:airline_powerline_fonts = 1
 let g:airline#extensions#tabline#enabled = 1
@@ -275,7 +274,6 @@ call plug#begin()
   Plug 'vim-airline/vim-airline'
   Plug 'ryanoasis/vim-devicons'
   Plug 'kaicataldo/material.vim', { 'branch': 'main' }
-  Plug 'morhetz/gruvbox'
 
   " Utilities
   Plug 'sheerun/vim-polyglot'
@@ -290,5 +288,8 @@ call plug#begin()
   
   " Git
   Plug 'airblade/vim-gitgutter'
+
+  Plug 'morhetz/gruvbox'
 call plug#end()
 
+colorscheme gruvbox
