@@ -1,3 +1,3 @@
 # Enda's Dotfiles
 
-My dotfiles.
+Run `./setup.sh` to install configuration profile.
