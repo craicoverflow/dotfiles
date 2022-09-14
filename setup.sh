@@ -1,5 +1,7 @@
 # /bin/sh
 
+set -eo pipefail
+
 does_binary_exist() {
   if ! command -v $1 &> /dev/null
   then
