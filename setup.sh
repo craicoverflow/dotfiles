@@ -23,6 +23,8 @@ breww() {
   brew "$@"
 }
 
+ln -sf "$(pwd)/zsh/config" $HOME/.zshrc
+
 # Install nvm
 if ! does_binary_exist "nvm"
 then
