@@ -1,5 +1,6 @@
 # /bin/sh
 
+# fail fast
 set -eo pipefail
 
 does_binary_exist() {
