@@ -82,5 +82,6 @@ git_clone_if_not_exists https://github.com/zsh-users/zsh-syntax-highlighting.git
 echo "Installing powerlevel10k plugin..."
 git_clone_if_not_exists https://github.com/romkatv/powerlevel10k.git ${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/themes/powerlevel10k --depth=1
 
+ln -sf "$(pwd)/p10k/config" "$HOME/.p10k.sh"
 ln -sf "$(pwd)/zsh/config" "$HOME/.zshrc"
 echo "Run 'source "$HOME/.zshrc"' for your ZSH profile changes to come into effect"
