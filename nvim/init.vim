@@ -268,7 +268,12 @@ nnoremap <silent><nowait> <space>p  :<C-u>CocListResume<CR>
 " GO LANGUAGE SERVER SETTINGS
 autocmd BufWritePre *.go :silent call CocAction('runCommand', 'editor.action.organizeImport')
 
-" PLUGINS
+" FZF
+set rtp+=/usr/local/opt/fzf
+nnoremap <C-p> :FZF<CR>
+
+"
+"" PLUGINS
 call plug#begin()
   " Appearance
   Plug 'vim-airline/vim-airline'
@@ -279,6 +284,7 @@ call plug#begin()
   Plug 'sheerun/vim-polyglot'
   Plug 'jiangmiao/auto-pairs'
   Plug 'preservim/nerdtree'
+  Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
 
   " Completion / linters / formatters
   Plug 'neoclide/coc.nvim', {'branch': 'release', 'do': 'npm install'}
