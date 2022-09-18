@@ -92,8 +92,6 @@ source $ZSH/oh-my-zsh.sh
 unsetopt inc_append_history
 unsetopt share_history
 
-# export MANPATH="/usr/local/man:$MANPATH"
-
 # You may need to manually set your language environment
 # export LANG=en_US.UTF-8
 
@@ -114,22 +112,23 @@ fi
 # For a full list of active aliases, run `alias`.
 #
 # Example aliases
-# alias zshconfig="mate ~/.zshrc"
 # alias ohmyzsh="mate ~/.oh-my-zsh"
 
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
-[[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
+[[ ! -f $HOME/.p10k.zsh ]] || source $HOME/.p10k.zsh
 
 #aliases
 alias vim="nvim"
-alias zshedit="$EDITOR $HOME/.zshrc"
+alias zshconfig="vim ~/.zshrc"
 alias cat="bat"
 alias ls="exa"
 alias cl="clear"
 
+# create a device specific file for profile configurations
+local_profile="$HOME/.local_profile"
+test -f $$local_profile || touch $local_profile
+source $local_profile
+
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
-
-source "$HOME/.local_profile"
-
