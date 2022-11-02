@@ -89,9 +89,6 @@ source $ZSH/oh-my-zsh.sh
 
 # User configuration
 
-unsetopt inc_append_history
-unsetopt share_history
-
 # You may need to manually set your language environment
 # export LANG=en_US.UTF-8
 
@@ -123,6 +120,9 @@ alias zshconfig="vim ~/.zshrc"
 alias cat="bat"
 alias ls="exa"
 alias cl="clear"
+
+alias ed="vim $HOME/code/github.com/craicoverflow/dotfiles"
+alias sz="source $HOME/.zshrc"
 
 # create a device specific file for profile configurations
 local_profile="$HOME/.local_profile"
