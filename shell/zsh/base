@@ -1,0 +1,13 @@
+[[ ! -f $HOME/.dotfilesrc ]] || source $HOME/.dotfilesrc
+
+[[ ! -f $DOTFILES_ROOT/shell/zsh/core ]] || source $DOTFILES_ROOT/shell/zsh/core
+[[ ! -f $DOTFILES_ROOT/shell/zsh/paths ]] || source $DOTFILES_ROOT/shell/zsh/paths
+[[ ! -f $DOTFILES_ROOT/shell/zsh/config ]] || source $DOTFILES_ROOT/shell/zsh/config
+[[ ! -f $DOTFILES_ROOT/shell/zsh/local_config ]] || source $DOTFILES_ROOT/shell/zsh/local_config
+[[ ! -f $DOTFILES_ROOT/p10k/config ]] || source $DOTFILES_ROOT/p10k/config
+
+## Source all alias files
+for f in $DOTFILES_ROOT/shell/aliases/*
+do 
+  source $f
+done
