@@ -1,0 +1,8 @@
+alias cat="bat"
+alias ls="exa"
+alias cl="clear"
+alias copydir="echo $pwd | clipcopy"
+alias sz="source $HOME/.zshrc"
+
+alias kctx="kubectx"
+alias kns="kubens"

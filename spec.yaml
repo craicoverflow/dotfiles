@@ -1,0 +1,55 @@
+---
+brew:
+  taps:
+    romkatv/powerlevel10k: true
+    petere/postgresql: false
+  packages:
+    jq: true
+    git: true
+    helm: true
+    kind: true
+    fx: true
+    exa: true
+    bat: true
+    fzf: true
+    neovim: true
+    direnv: true
+    k9s: true
+    stern: true
+    docker: true
+kubectl:
+  enabled: true
+  kubectx: true
+  krew:
+    enabled: true
+    plugins:
+      stern: false
+vscode:
+  enabled: true
+  extensions:
+    alefragnani.Bookmarks: true
+    alefragnani.project-manager: true
+    eamodio.gitlens: true
+    Equinusocio.vsc-community-material-theme: true
+    golang.go: true
+    vscode-icons-team.vscode-icons: true
+    vscodevim.vim: true
+    mikestead.dotenv: true
+    Tim-Koehler.helm-intellisense: true
+    DavidAnson.vscode-markdownlint: true
+    lunuan.kubernetes-templates: true
+    ms-azuretools.vscode-docker: true
+    ms-kubernetes-tools.vscode-kubernetes-tools: true
+    ms-vscode.remote-repositories: true
+    redhat.vscode-yaml: true
+    vsls-contrib.codetour: true
+zsh:
+  theme: spaceship
+  plugins:
+  - name: git
+  - name: sudo
+  - name: copybuffer
+  - name: zsh-autosuggestions
+    source: github.com/zsh-users/zsh-autosuggestions
+  - name: zsh-syntax-highlighting
+    source: github.com/zsh-users/zsh-syntax-highlighting
