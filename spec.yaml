@@ -23,7 +23,9 @@ kubectl:
   krew:
     enabled: true
     plugins:
-      stern: false
+      stern: true
+      view-secret: true
+      explore: true
 vscode:
   enabled: true
   extensions:
