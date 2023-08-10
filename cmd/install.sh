@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -eo pipefail
+
 OS="$(uname -s | tr '[:upper:]' '[:lower:]')"
 ARCH="$(uname -m | sed -e 's/x86_64/amd64/' -e 's/\(arm\)\(64\)\?.*/\1\2/' -e 's/aarch64$/arm64/')"
 INSTALLDIR=$(pwd)
@@ -123,7 +125,8 @@ install_brew_packages() {
   for t in "${brew_untaps[@]}"
   do
     :
-    brew untap $t 2> /dev/null
+    info "Removing brew tap $t"
+    brew untap $t || true
   done
 
   brew_install_packages=($(get_enabled_items '.brew.packages'))

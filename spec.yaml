@@ -3,6 +3,7 @@ brew:
   taps:
     romkatv/powerlevel10k: true
     petere/postgresql: false
+    homeport/tap: true
   packages:
     jq: true
     git: true
@@ -17,6 +18,7 @@ brew:
     k9s: true
     stern: true
     docker: true
+    dyff: true
 kubectl:
   enabled: true
   kubectx: true
