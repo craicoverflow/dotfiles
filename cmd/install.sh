@@ -339,8 +339,8 @@ install_zsh() {
 }
 
 symlink_dotfiles() {
-  $DOTFILES_ROOT/shell/symlink-all.sh
-  [[ ! -f $DOTFILES_ROOT/shell/symlink-local.sh ]] || $DOTFILES_ROOT/shell/symlink-local.sh
+  $DOTFILES_ROOT/shell/cp-all.sh
+  [[ ! -f $DOTFILES_ROOT/shell/cp-local.sh ]] || $DOTFILES_ROOT/shell/cp-local.sh
 }
 
 init() {

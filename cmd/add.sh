@@ -39,18 +39,18 @@ cp $dotfile_path $to_folder
 mapFrom="${to_folder/$DOTFILES_ROOT/\$DOTFILES_ROOT}"
 mapTo="${dotfile_path/$HOME/\$HOME}"
 
-mappingsFile="$DOTFILES_ROOT/shell/symlink-all.sh"
+mappingsFile="$DOTFILES_ROOT/shell/cp-all.sh"
 
 if [[ $local == "true" ]]; then
-	mappingsFile="$DOTFILES_ROOT/shell/symlink-local.sh"
+	mappingsFile="$DOTFILES_ROOT/shell/cp-local.sh"
 fi
 
 mappingLine="$mapFrom:$mapTo"
-if grep -Fxq "ln -sf ${mapFrom} ${mapTo}" $mappingsFile
+if grep -Fxq "cp ${mapFrom} ${mapTo}" $mappingsFile
 then
 	info "Mapping already found between $mapTo and $mapFrom"
 else
-	echo "ln -sf ${mapFrom} ${mapTo}" >> $mappingsFile
+	echo "cp ${mapFrom} ${mapTo}" >> $mappingsFile
 fi
 
 $mappingsFile
