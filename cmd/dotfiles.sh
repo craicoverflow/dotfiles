@@ -14,5 +14,11 @@ case "$CMD" in
 "edit")
   $EDITOR $DOTFILES_ROOT
   ;;
+"diff")
+  ${cmd_dir}/diff.sh
+  ;;
+"apply")
+  ${cmd_dir}/apply.sh
+  ;;
 *)
 esac

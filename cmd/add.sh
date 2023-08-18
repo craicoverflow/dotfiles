@@ -1,56 +1,47 @@
 #!/usr/bin/env bash
 
-OS="$(uname -s | tr '[:upper:]' '[:lower:]')"
-ARCH="$(uname -m | sed -e 's/x86_64/amd64/' -e 's/\(arm\)\(64\)\?.*/\1\2/' -e 's/aarch64$/arm64/')"
+set -e
+set -u
+set -o pipefail
+
 cmd_dir="$(dirname "$0")"
+source ${cmd_dir}/_util.sh
 
-local="${3:-"false"}"
+dotfile_path="${1}"
 
-info() {
-  >&2 echo $1
-}
+to_folder="$DOTFILES_ROOT"
+if [[ "${2}" != "." ]]; then
+	to_folder="${DOTFILES_ROOT}/${2}"
+fi
 
-debug() {
-  >&2 echo $1
-}
-
-fail() {
-  info "Error: $1"
-  exit 1
-}
-
-dotfile_path="$1"
-to_folder="$DOTFILES_ROOT/$2"
+local="${3:-false}"
 
 if [ ! -f $dotfile_path ]
 then
 	fail "file '$dotfile_path' does not exist"
 fi
 
-to_dir=$(dirname $to_folder)
+to_dir=$to_folder
 if [ ! -d $to_dir ]
 then
-	info "Creating directory $to_dir"
+	log::info "Creating directory $to_dir"
 	mkdir -p $to_dir
 fi
 
-cp $dotfile_path $to_folder
-
-mapFrom="${to_folder/$DOTFILES_ROOT/\$DOTFILES_ROOT}"
 mapTo="${dotfile_path/$HOME/\$HOME}"
+mapFrom="${to_folder/$DOTFILES_ROOT/\$DOTFILES_ROOT}/$(basename ${dotfile_path})"
 
-mappingsFile="$DOTFILES_ROOT/shell/cp-all.sh"
+mappingsFile="$DOTFILES_ROOT/dotfiles.cfg"
 
 if [[ $local == "true" ]]; then
-	mappingsFile="$DOTFILES_ROOT/shell/cp-local.sh"
+	mappingsFile="$DOTFILES_ROOT/shell/dotfiles.local.cfg"
 fi
 
 mappingLine="$mapFrom:$mapTo"
-if grep -Fxq "cp ${mapFrom} ${mapTo}" $mappingsFile
+if grep -Fxq "${mapFrom}=>${mapTo}" $mappingsFile
 then
-	info "Mapping already found between $mapTo and $mapFrom"
+	log::info "Mapping already found between $mapTo and $mapFrom"
 else
-	echo "cp ${mapFrom} ${mapTo}" >> $mappingsFile
+	cp $(eval "echo ${dotfile_path}") $(eval "echo ${mapFrom}")
+	echo "${mapFrom}=>${mapTo}" >> $mappingsFile
 fi
-
-$mappingsFile
