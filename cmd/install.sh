@@ -1,32 +1,15 @@
 #!/usr/bin/env bash
 
-set -eo pipefail
+set -o pipefail
 
-OS="$(uname -s | tr '[:upper:]' '[:lower:]')"
-ARCH="$(uname -m | sed -e 's/x86_64/amd64/' -e 's/\(arm\)\(64\)\?.*/\1\2/' -e 's/aarch64$/arm64/')"
 INSTALLDIR=$(pwd)
 cmd_dir="$(dirname "$0")"
 generated_dotfiles_specfile="$DOTFILES_ROOT/bin/dotfiles-spec-generated.yaml"
 zsh_root=${ZSH_CUSTOM:-~/.oh-my-zsh/custom}
 
+source ${cmd_dir}/_util.sh
+
 flag_ignore="ignore"
-
-info() {
-  >&2 echo $1
-}
-
-debug() {
-  >&2 echo $1
-}
-
-fail() {
-  info "$1"
-  exit 1
-}
-
-rimraf() {
-  rm -rf "$1"
-}
 
 binary_exists() {
   if ! command -v $1 &> /dev/null
@@ -37,12 +20,12 @@ binary_exists() {
 }
 
 install_brew() {
-  info "Installing Homebrew ⚙️ "
+  log::info "Installing Homebrew ⚙️ "
   if ! binary_exists brew
   then
     bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
   else
-    info "Homebrew is already installed 😊"
+    log::info "Homebrew is already installed 😊"
   fi
 }
 
@@ -69,8 +52,8 @@ brew_install() {
   for p in "${packages[@]}"
   do
     : 
-    info "⚙️ Installing $p."
-    brew install $p && info "$p is installed."
+    log::info "⚙️ Installing $p."
+    brew install $p && log::info "$p is installed."
   done
 }
 
@@ -80,8 +63,8 @@ brew_uninstall() {
   do
     : 
     if brew list $p &>/dev/null; then
-      info "⚙️ Uninstalling $p."
-      brew uninstall $p && info "$p is uninstalled."
+      log::info "⚙️ Uninstalling $p."
+      brew uninstall $p && log::info "$p is uninstalled."
     fi
   done
 }
@@ -113,34 +96,36 @@ install_brew_packages() {
 
   brew_taps=($(get_enabled_items '.brew.taps'))
   
-  info "Adding Homebrew taps."
+  log::info "Adding Homebrew taps."
   for t in "${brew_taps[@]}"
   do
     : 
     brew tap $t
   done
 
-  info "Removing unwanted Homebrew taps."
+  log::info "Removing unwanted Homebrew taps."
   brew_untaps=($(get_disabled_items '.brew.taps'))
   for t in "${brew_untaps[@]}"
   do
     :
-    info "Removing brew tap $t"
+    log::info "Removing brew tap $t"
     brew untap $t || true
   done
 
   brew_install_packages=($(get_enabled_items '.brew.packages'))
 
-  info "Installing Homebrew packages."
+  log::info "Installing Homebrew packages."
   for i in "${brew_install_packages[@]}"
   do
     : 
       brew_install $i
   done
 
+  return
+
   brew_uninstall_packages=($(get_disabled_items '.brew.packages'))
 
-  info "Uninstalling unwanted Homebrew packages."
+  log::info "Uninstalling unwanted Homebrew packages."
   for i in "${brew_uninstall_packages[@]}"
   do
     : 
@@ -156,23 +141,24 @@ install_vscode() {
   brew_install visual-studio-code
 
   enabled_extensions=($(get_enabled_items '.vscode.extensions'))
-  info "Installing Visual Studio Code extensions."
+  log::info "Installing Visual Studio Code extensions."
   for i in "${enabled_extensions[@]}"
   do
     : 
       if ! code --list-extensions | grep $i &>/dev/null; then
-        info "Installing extension $i ⚙️ "
-        code --install-extension $i && info "$i is installed."
+        log::info "Installing extension $i ⚙️ "
+        code --install-extension $i && log::info "$i is installed."
       fi
   done
+
   disabled_extensions=($(get_disabled_items '.vscode.extensions'))
-  info "Uninstalling Visual Studio Code extensions."
+  log::info "Uninstalling Visual Studio Code extensions."
   for i in "${disabled_extensions[@]}"
   do
     : 
       if ! code --list-extensions | grep $i &>/dev/null; then
-        info "Uninstalling extension $1i⚙️ "
-        code --uninstall-extension $i && info "$i is uninstalled."
+        log::info "Uninstalling extension $1i⚙️ "
+        code --uninstall-extension $i && log::info "$i is uninstalled."
       fi
   done
 }
@@ -180,19 +166,19 @@ install_vscode() {
 install_kubectl_krew() {
   enabled=($(get_config_value '.kubectl.krew.enabled'))
   if [ $enabled == false ]; then
-    info "Uninstalling Krew."
+    log::info "Uninstalling Krew."
     rimraf $HOME/.krew
     return
   fi
 
   if ! binary_exists kubectl; then
-    info "kubectl is required to use krew. Please enable in spec or install via alternative method."
+    log::info "kubectl is required to use krew. Please enable in spec or install via alternative method."
   fi
 
   if [ -d $HOME/.krew ]; then
-    info "Krew is already installed."
+    log::info "Krew is already installed."
   else
-    info "Installing Krew."
+    log::info "Installing Krew."
     set -x; cd "$(mktemp -d)" &&
     KREW="krew-${OS}_${ARCH}" &&
     curl -fsSLO "https://github.com/kubernetes-sigs/krew/releases/latest/download/${KREW}.tar.gz" &&
@@ -201,26 +187,29 @@ install_kubectl_krew() {
   fi
 
   enabled_plugins=($(get_enabled_items '.kubectl.krew.plugins'))
-  info "Installing Krew extensions."
+  log::info "Installing Krew extensions."
   for i in "${enabled_plugins[@]}"
   do
     : 
-      info "Installing plugins $i"
-      kubectl krew install $i && info "$i is installed."
+      log::info "Installing plugins $i"
+      kubectl krew install $i && log::info "$i is installed."
   done
   disabled_extensions=($(get_disabled_items '.kubectl.krew.plugins'))
-  info "Uninstalling Krew extensions."
+  log::info "Uninstalling Krew extensions."
   for i in "${disabled_extensions[@]}"
   do
     : 
       if kubectl krew | grep $i &>/dev/null; then
-        kubectl krew uninstall $i && info "$i is uninstalled."
+        kubectl krew uninstall $i && log::info "$i is uninstalled."
       fi
   done
+
+  log::info "Updating Krew plugins.."
+  kubectl krew upgrade
 }
 
 uninstall_kubectl_krew() {
-  info "Uninstalling Krew"
+  log::info "Uninstalling Krew"
   rimraf $HOME/.krew
 }
 
@@ -229,10 +218,10 @@ install_kubectl() {
 
   if [[ $enabled == $flag_ignore ]]
   then
-    debug "Ignoring kubectl installation"
+    log::debug "Ignoring kubectl installation"
   elif [ $enabled == false ]
   then
-    info "Uninstalling kubectl and its dependencies: krew, kubectx, kubens"
+    log::info "Uninstalling kubectl and its dependencies: krew, kubectx, kubens"
     uninstall_kubectl_krew
     brew_uninstall kubectx kubernetes-cli
     return
@@ -304,7 +293,7 @@ install_zsh_plugins() {
     
     if [[ $enabled == false ]]
     then
-      info "Uninstalling zsh plugin '$name'"
+      log::info "Uninstalling zsh plugin '$name'"
       rimraf $plugin_location
       continue
     fi
@@ -312,12 +301,12 @@ install_zsh_plugins() {
     ZSH_PLUGINS+=($name)
 
     if [ -d $plugin_location ]; then
-      info "zsh plugin '$name' already installed. Updating.."
+      log::info "zsh plugin '$name' already installed. Updating.."
       cd $plugin_location
       continue
     fi
 
-    info "Installing zsh plugin '$name'"
+    log::info "Installing zsh plugin '$name'"
     git_clone https://$source $plugin_location
   done
 }
@@ -338,13 +327,12 @@ install_zsh() {
   ln -sf "$zsh_root/themes/spaceship-prompt/spaceship.zsh-theme" "$zsh_root/themes/spaceship.zsh-theme"
 }
 
-symlink_dotfiles() {
-  $DOTFILES_ROOT/shell/symlink-all.sh
-  [[ ! -f $DOTFILES_ROOT/shell/symlink-local.sh ]] || $DOTFILES_ROOT/shell/symlink-local.sh
+apply_dotfiles() {
+  dotfiles apply
 }
 
 init() {
-  symlink_dotfiles
+  apply_dotfiles
   init_config
   install_zsh
   setup_zsh_profile
