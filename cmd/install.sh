@@ -34,9 +34,9 @@ get_config() {
 }
 
 init_config() {
-   ytt_flags="-f $DOTFILES_ROOT/spec.yaml"
-  if [ -f $DOTFILES_ROOT/spec.local.yaml ]; then
-    ytt_flags="$ytt_flags -f $DOTFILES_ROOT/spec.local.yaml"
+   ytt_flags="-f $DOTFILES_ROOT/packages.yaml"
+  if [ -f $DOTFILES_ROOT/packages-local.yaml ]; then
+    ytt_flags="$ytt_flags -f $DOTFILES_ROOT/packages-local.yaml"
   fi
   ytt ${ytt_flags} > $generated_dotfiles_specfile
 }
@@ -327,12 +327,7 @@ install_zsh() {
   ln -sf "$zsh_root/themes/spaceship-prompt/spaceship.zsh-theme" "$zsh_root/themes/spaceship.zsh-theme"
 }
 
-apply_dotfiles() {
-  dotfiles apply
-}
-
 init() {
-  apply_dotfiles
   init_config
   install_zsh
   setup_zsh_profile
