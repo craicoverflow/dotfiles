@@ -68,7 +68,3 @@ Run the following command to open the dotfiles in your preferred edit (`$EDITOR`
 ```sh
 dotfiles edit
 ```
-
-### Local files
-
-You can 
