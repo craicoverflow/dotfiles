@@ -7,3 +7,5 @@ plugins=(git sudo copybuffer zsh-autosuggestions zsh-syntax-highlighting)
 PROMPT='$(kube_ps1)'$PROMPT
 
 source $ZSH/oh-my-zsh.sh
+
+eval "$(direnv hook bash)"
