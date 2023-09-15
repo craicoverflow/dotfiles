@@ -1,4 +1,3 @@
----
 brew:
   taps:
     romkatv/powerlevel10k: true

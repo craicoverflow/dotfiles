@@ -22,6 +22,12 @@ To install the packages found in `$DOTFILES_ROOT/packages.yaml`:
 dotfiles install
 ```
 
+> To specify a custom YQ path, pass the `YQ_PATH` environment variable:
+
+```sh
+YQ_PATH=$HOME/custom/bin/yq dotfiles install
+```
+
 If you wish to disable installation of some of these packages, add a `packages-local.yaml` file to the `$DOTFILES_ROOT` folder, and only the configs you need to disable and set the value to `false`:
 
 ```diff

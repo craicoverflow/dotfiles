@@ -4,12 +4,17 @@ set -o pipefail
 
 INSTALLDIR=$(pwd)
 cmd_dir="$(dirname "$0")"
-generated_dotfiles_specfile="$DOTFILES_ROOT/bin/dotfiles-spec-generated.yaml"
+generated_dotfiles_specfile="$DOTFILES_ROOT/packages-generated.yaml"
 zsh_root=${ZSH_CUSTOM:-~/.oh-my-zsh/custom}
+YQ_PATH="${YQ_PATH:-yq}"
 
 source ${cmd_dir}/_util.sh
 
 flag_ignore="ignore"
+
+execute() {
+  eval "$@"
+}
 
 binary_exists() {
   if ! command -v $1 &> /dev/null
@@ -34,17 +39,13 @@ get_config() {
 }
 
 init_config() {
-   ytt_flags="-f $DOTFILES_ROOT/packages.yaml"
-  if [ -f $DOTFILES_ROOT/packages-local.yaml ]; then
-    ytt_flags="$ytt_flags -f $DOTFILES_ROOT/packages-local.yaml"
-  fi
-  ytt ${ytt_flags} > $generated_dotfiles_specfile
+  yyq e ". *n load(\"$DOTFILES_ROOT/packages.yaml\")" $DOTFILES_ROOT/packages-local.yaml > $generated_dotfiles_specfile
 }
 
 get_config_value() {
   path="$1"
 
-  get_config | yq "$path"
+  get_config | execute "$YQ_PATH '$path'"
 }
 
 brew_install() {
@@ -276,7 +277,7 @@ uninstall_oh_my_zsh_plugin() {
 }
 
 install_zsh_plugins() {
-  for plugin in $(echo $(get_config_value '.zsh' | yq eval -o=j | jq -cr '.plugins[]')); do
+  for plugin in $(echo $(get_config_value '.zsh' | execute ${YQ_PATH} eval -o=j | jq -cr '.plugins[]')); do
     name=$(echo $plugin | jq -r '.name')
     source=$(echo $plugin | jq -r '.source')
 
