@@ -3,6 +3,12 @@ alias ls="exa"
 alias cl="clear"
 alias copydir="echo $pwd | clipcopy"
 alias sz="source $HOME/.zshrc"
-
 alias kctx="kubectx"
 alias kns="kubens"
+alias kvs="kubectl view-secret"
+alias kshell="kubectl-remote_shell"
+
+# delete all contexts that match the string
+kxgd() {
+  kubectx -d $(kubectx | cat | grep "$1")
+}
