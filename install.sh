@@ -7,7 +7,7 @@ set -o pipefail
 git clone git@github.com:craicoverflow/dotfiles.git ~/.dotfiles
 cd ~/.dotfiles
 
-echo "export DOTFILES_ROOT=$(pwd)" > ~/.dotfilesrc
+echo "export DOTFILES_ROOT=$(pwd)" > $DOTFILES_ROOT/.dotfilesrc
 
 >&2 echo ""
 >&2 echo "dotfiles installed successfully. Run 'dotfiles install' to install packages"

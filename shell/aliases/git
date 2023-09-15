@@ -1,0 +1,6 @@
+alias gcm="git checkout main || git checkout master"
+alias grm="git fetch origin && git rebase origin/main || git rebase origin/master"
+alias grc="git rebase --continue"
+gch() {
+  git checkout $(git for-each-ref refs/heads/ --format='%(refname:short)' | fzf)
+}

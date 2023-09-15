@@ -1,5 +1,15 @@
 export ZSH="$HOME/.oh-my-zsh"
 
+# You may need to manually set your language environment
+# export LANG=en_US.UTF-8
+
+# Preferred editor for local and remote sessions
+if [[ -n $SSH_CONNECTION ]]; then
+  export EDITOR='vim'
+else
+  export EDITOR='code'
+fi
+
 ZSH_THEME="spaceship"
 
 plugins=(git sudo copybuffer zsh-autosuggestions zsh-syntax-highlighting)
@@ -7,5 +17,3 @@ plugins=(git sudo copybuffer zsh-autosuggestions zsh-syntax-highlighting)
 PROMPT='$(kube_ps1)'$PROMPT
 
 source $ZSH/oh-my-zsh.sh
-
-eval "$(direnv hook bash)"
