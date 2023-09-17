@@ -7,12 +7,12 @@ cmd_dir="$(dirname "$0")"
 generated_dotfiles_specfile="$DOTFILES_ROOT/packages-generated.yaml"
 zsh_root=${ZSH_CUSTOM:-~/.oh-my-zsh/custom}
 YQ_PATH="${YQ_PATH:-yq}"
-
 source ${cmd_dir}/_util.sh
 
 flag_ignore="ignore"
 
 execute() {
+  log::debug "Executing '$@'"
   eval "$@"
 }
 
@@ -39,7 +39,9 @@ get_config() {
 }
 
 init_config() {
-  yyq e ". *n load(\"$DOTFILES_ROOT/packages.yaml\")" $DOTFILES_ROOT/packages-local.yaml > $generated_dotfiles_specfile
+  log::debug "Initializing config.."
+  touch $DOTFILES_ROOT/packages-local.yaml
+  execute "${YQ_PATH} '. *n load(\"$DOTFILES_ROOT/packages.yaml\")' $DOTFILES_ROOT/packages-local.yaml" > $generated_dotfiles_specfile
 }
 
 get_config_value() {
