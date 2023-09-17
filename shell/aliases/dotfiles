@@ -1,0 +1,6 @@
+alias df="dotfiles"
+alias dfd="dotfiles diff"
+alias dfa="dotfiles apply"
+alias dfi="dotfiles install"
+alias dfa="dotfiles apply"
+alias dfd="dotfiles download"
