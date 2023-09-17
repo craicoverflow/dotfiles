@@ -1249,7 +1249,10 @@ alias kgcmwslowiden='kubectl get configmap --watch --show-labels -o=wide --names
 alias kgsecwslowiden='kubectl get secret --watch --show-labels -o=wide --namespace'
 
 function kubectl() { 
-  echo "+ kubectl $@">&2; command kubectl $@; 
+  if [[ "$NO_LOG" != "true" ]]; then
+    echo "+ kubectl $@">&2; 
+  fi
+  command kubectl $@; 
 }
 
 function kubectl-remote_shell() {
