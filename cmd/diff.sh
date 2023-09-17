@@ -23,6 +23,15 @@ print_diff() {
 	while read l; do
 		from=$(eval "echo ${l%=>*}")
 		to=$(eval "echo ${l#*=>}")
+		
+		# create the files if they do not exist
+		# useful for local configs 
+		if [[ ! -e $from ]]; then
+    		touch $from
+		fi
+		if [[ ! -e $to ]]; then
+    		touch $to
+		fi
 
 		count=$(echo $(diff $to $from --suppress-common-lines | wc -l))
 		if [[ "$count" != 0 ]]; then
