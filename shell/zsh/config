@@ -17,7 +17,7 @@ fi
 
 export ZSH="$HOME/.oh-my-zsh"
 
-source <(kubectl completion zsh &> /dev/null)
+source <(kubectl completion zsh)
 eval "$(direnv hook bash)"
 
 ZSH_THEME="spaceship"
