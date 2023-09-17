@@ -20,5 +20,8 @@ case "$CMD" in
 "apply")
   ${cmd_dir}/apply.sh
   ;;
+"download")
+  ${cmd_dir}/download.sh
+  ;;
 *)
 esac
