@@ -1,4 +1,4 @@
-[[ ! -f $DOTFILES_ROOT/.dotfilesrc ]] || source $DOTFILES_ROOT/.dotfilesrc
+[[ ! -f $HOME/.dotfilesrc ]] || source $HOME/.dotfilesrc
 [[ ! -f $DOTFILES_ROOT/shell/zsh/paths ]] || source $DOTFILES_ROOT/shell/zsh/paths
 [[ ! -f $DOTFILES_ROOT/shell/zsh/config ]] || source $DOTFILES_ROOT/shell/zsh/config
 [[ ! -f $DOTFILES_ROOT/shell/zsh/local_config ]] || source $DOTFILES_ROOT/shell/zsh/local_config
