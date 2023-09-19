@@ -7,6 +7,7 @@ alias kctx="kubectx"
 alias kns="kubens"
 alias kvs="kubectl view-secret"
 alias kshell="kubectl-remote_shell"
+alias grep=egrep
 
 # delete all contexts that match the string
 kxgd() {
