@@ -1,0 +1,2 @@
+alias dsp="docker system prune"
+alias dspv="docker system prune --volumes"
