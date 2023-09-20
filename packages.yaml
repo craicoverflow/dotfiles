@@ -20,7 +20,7 @@ brew:
     dyff: true
 kubectl:
   enabled: true
-  kubectx: false # remove once kubie replaces it.
+  kubectx: true
   kubeie: true
   krew:
     enabled: true
