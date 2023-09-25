@@ -1,0 +1,70 @@
+#!/usr/bin/env bash
+
+# Script to kill all pods matching a keyword
+# This scritp can be used as a kubectl plugin and invoked as a sub-command
+# Examples:
+#   kubectl killall metrics
+
+function usage() {
+  if [ -n "${1}" ]; then
+    echo -e "${1}"
+    echo ''
+  fi
+  echo "Usage: $(basename "$0") [<flags>] <keyword>"
+  echo ''
+  echo 'Flags:'
+  echo '  -h, --help                            display help'
+  echo '  -d, --debug                           enable debug output'
+  echo '  -f, --force                           force delete pods'
+  exit 1
+}
+
+FORCE=""
+DEBUG="false"
+NAMESPACE="--all-namespaces"
+POSITIONAL=()
+
+while [[ $# -gt 0 ]]; do
+  key="$1"
+
+  case $key in
+  -h | --help) usage "" ;;
+  -d | --debug)
+    DEBUG=true
+    shift
+    ;;
+  -f | --force)
+    FORCE=true
+    shift
+    ;;
+  -n | --namespace)
+    NAMESPACE="-n $2"
+    shift 2
+    ;;
+  *)
+    POSITIONAL+=("$1") # save it in an array for later
+    shift              # past argument
+    ;;
+  esac
+done
+set -- "${POSITIONAL[@]}" # restore positional parameters
+
+if [[ ${FORCE} == "true" ]]; then
+  FORCE="--grace-period=0 --force"
+fi
+
+filter='{print $2 " -n " $1}'
+if [[ "${NAMESPACE}" != "--all-namespaces" ]]; then
+  filter=$(printf '{print $1 " %s "}' "${NAMESPACE}")
+fi
+
+if [[ ${DEBUG} == "true" ]]; then
+  echo "filter: ${filter}"
+fi
+
+cmd="kubectl get po ${NAMESPACE} --no-headers -o wide | grep '${1}' | awk '${filter}' | xargs -L1 -r kubectl delete ${FORCE} po"
+if [[ ${DEBUG} == "true" ]]; then
+  echo "${cmd}"
+fi
+
+eval "${cmd}"

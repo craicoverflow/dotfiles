@@ -28,6 +28,9 @@ kubectl:
       stern: true
       view-secret: true
       explore: true
+      tree: true
+      foreach: true
+      neat: true
 vscode:
   enabled: true
   extensions:
