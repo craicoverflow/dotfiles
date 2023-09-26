@@ -5,6 +5,7 @@ brew:
     homeport/tap: true
   packages:
     jq: true
+    colima: true
     git: true
     helm: true
     kind: true
