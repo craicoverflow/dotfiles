@@ -4,3 +4,4 @@
 *.kubeconfig
 .vscode
 /.envrc
+/*.code-workspace.json
