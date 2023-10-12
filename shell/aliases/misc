@@ -2,13 +2,13 @@ alias cat="bat"
 alias ls="exa"
 alias cl="clear"
 alias copydir="echo $pwd | clipcopy"
-alias sz="source $HOME/.zshrc"
 alias kctx="kubectx"
 alias kns="kubens"
 alias kvs="kubectl view-secret"
 alias kshell="kubectl-remote_shell"
 alias grep=egrep
 alias gr=egrep
+alias reload="source ~/.zshrc"
 
 # delete all contexts that match the string
 kxgd() {
