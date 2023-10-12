@@ -2,3 +2,4 @@ export PATH=$HOME/bin:/usr/local/bin:$HOME/bin:$PATH
 export PATH="${KREW_ROOT:-$HOME/.krew}/bin:$PATH"
 export PATH=$DOTFILES_ROOT/bin:$PATH
 export PATH=$DOTFILES_ROOT/scripts/bin:$PATH
+export PATH=$DOTFILES_ROOT/scripts/bin.local:$PATH
