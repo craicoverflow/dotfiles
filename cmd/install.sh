@@ -46,8 +46,9 @@ init_config() {
 
 get_config_value() {
   path="$1"
+  outputFormat="${2:-yaml}"
 
-  get_config | execute "$YQ_PATH '$path'"
+  get_config | yq "$path" -o $outputFormat
 }
 
 brew_install() {
@@ -330,6 +331,17 @@ install_zsh() {
   ln -sf "$zsh_root/themes/spaceship-prompt/spaceship.zsh-theme" "$zsh_root/themes/spaceship.zsh-theme"
 }
 
+exec_hooks() {
+  for hook in $(echo $(get_config_value '.hooks[]' json | jq -r)); do
+    script_path="$DOTFILES_ROOT/$hook"
+
+    if [ -f $script_path ]; then
+      log::debug "Running script: $script_path ..."
+      execute "$script_path"
+    fi
+  done
+}
+
 init() {
   init_config
   install_zsh
@@ -337,6 +349,7 @@ init() {
   install_brew_packages
   install_vscode
   install_kubectl
+  exec_hooks
 }
 
 init

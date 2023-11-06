@@ -4,8 +4,10 @@ brew:
     petere/postgresql: false
     homeport/tap: true
   packages:
+    hugo: true
     jq: true
-    colima: true
+    colima: false
+    wget: true
     git: true
     helm: true
     kind: true
@@ -19,6 +21,7 @@ brew:
     stern: true
     docker: true
     dyff: true
+    thecasualcoder/stable/kube-fzf: true
 kubectl:
   enabled: true
   kubectx: true
@@ -57,7 +60,11 @@ zsh:
   - name: git
   - name: sudo
   - name: copybuffer
+  - name: kubectl
   - name: zsh-autosuggestions
     source: github.com/zsh-users/zsh-autosuggestions
   - name: zsh-syntax-highlighting
     source: github.com/zsh-users/zsh-syntax-highlighting
+hooks:
+- scripts/create-bin-dir
+- scripts/install-bitwarden-cli
