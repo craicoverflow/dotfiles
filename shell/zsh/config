@@ -15,7 +15,7 @@ eval "$(direnv hook zsh)"
 
 ZSH_THEME="spaceship"
 
-plugins=(git sudo copybuffer zsh-autosuggestions zsh-syntax-highlighting)
+plugins=(git sudo copybuffer kubectl zsh-autosuggestions zsh-syntax-highlighting)
 
 PROMPT='$(kube_ps1)'$PROMPT
 

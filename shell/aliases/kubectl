@@ -1250,13 +1250,6 @@ alias kgsecwslowiden='kubectl get secret --watch --show-labels -o=wide --namespa
 alias kgfp='kubectl get pods -A | grep -v "(Running|Completed)"'
 alias kgfpa='kubectl get pods | grep -v "(Running|Completed)"'
 
-function kubectl() { 
-  if [[ "$NO_LOG" != "true" ]]; then
-    echo "+ kubectl $@">&2; 
-  fi
-  command kubectl $@; 
-}
-
 function kubectl-remote_shell() {
   kubectl ${@} run --restart=Never --rm -i --tty alpine --image=alpine -- sh
 }
