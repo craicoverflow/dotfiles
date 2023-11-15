@@ -3,7 +3,10 @@ alias grbm="git fetch --prune origin && git rebase origin/main || git rebase ori
 alias grbc="git rebase --continue"
 alias gcam="git commit --amend"
 alias gcamne="gcam --no-edit"
+alias gpfwl="git push --force-with-lease"
+alias grbi="git rebase -i --autostash"
 alias gdelub="git branch --merged | egrep -v \"(^\*|master|main)\" | xargs git branch -d"
+alias glog="git log --graph --pretty=format:'%C(yellow)%h%Creset  %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit -10"
 
 gch() {
   git checkout $(git for-each-ref refs/heads/ --format='%(refname:short)' | fzf)

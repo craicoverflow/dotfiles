@@ -1247,8 +1247,12 @@ alias kgsvcwslowiden='kubectl get service --watch --show-labels -o=wide --namesp
 alias kgingwslowiden='kubectl get ingress --watch --show-labels -o=wide --namespace'
 alias kgcmwslowiden='kubectl get configmap --watch --show-labels -o=wide --namespace'
 alias kgsecwslowiden='kubectl get secret --watch --show-labels -o=wide --namespace'
-alias kgfp='kubectl get pods -A | grep -v "(Running|Completed)"'
-alias kgfpa='kubectl get pods | grep -v "(Running|Completed)"'
+alias kgfp='kubectl-get_failing_pods'
+alias kgfpa='kubectl-get_failing_pods -A'
+
+function kubectl-get_failing_pods() {
+  kubectl get pods ${@} | egrep -v "(Running|Completed)"
+}
 
 function kubectl-remote_shell() {
   kubectl ${@} run --restart=Never --rm -i --tty alpine --image=alpine -- sh
