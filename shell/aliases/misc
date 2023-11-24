@@ -14,3 +14,19 @@ alias reload="source ~/.zshrc"
 kxgd() {
   kubectx -d $(kubectx | cat | grep "$1")
 }
+
+zsh_dir_hashes_path="$HOME/.local/share/.zsh_dir_hashes"
+[ -f $zsh_dir_hashes_path ] && $zsh_dir_hashes_path
+hashdir() {
+    [ -z "$1" ] && echo "Pass hash to use for dir" && return 1
+    hash -d "$1"="$(pwd)"
+    echo hash -d "$1"=\""$(pwd)"\" >>$zsh_dir_hashes_path
+}
+
+ls-hashdirs() {
+  cat $zsh_dir_hashes_path
+}
+
+cd-subproject() {
+  cd "${1:-.}/$(find . -maxdepth 5 -type d -name .git | sed 's|/.git$||' | fzf --preview 'tree -L 2 ./{}')"
+}

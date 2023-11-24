@@ -21,7 +21,7 @@ brew:
     stern: true
     docker: true
     dyff: true
-    thecasualcoder/stable/kube-fzf: true
+    tree: true
 kubectl:
   enabled: true
   kubectx: true
@@ -67,4 +67,3 @@ zsh:
     source: github.com/zsh-users/zsh-syntax-highlighting
 hooks:
 - scripts/create-bin-dir
-- scripts/install-bitwarden-cli

@@ -169,7 +169,7 @@ install_vscode() {
 
 install_kubectl_krew() {
   enabled=($(get_config_value '.kubectl.krew.enabled'))
-  if [ $enabled == false ]; then
+  if [[ $enabled == false ]]; then
     log::info "Uninstalling Krew."
     rimraf $HOME/.krew
     return
@@ -223,13 +223,13 @@ install_kubectl() {
   if [[ $enabled == $flag_ignore ]]
   then
     log::debug "Ignoring kubectl installation"
-  elif [ $enabled == false ]
+  elif [[ $enabled == false ]]
   then
     log::info "Uninstalling kubectl and its dependencies: krew, kubectx, kubens"
     uninstall_kubectl_krew
     brew_uninstall kubectx kubernetes-cli
     return
-  elif [ $enabled == true ]
+  elif [[ $enabled == true ]]
   then
     brew_install kubernetes-cli
   fi

@@ -7,7 +7,15 @@ alias gpfwl="git push --force-with-lease"
 alias grbi="git rebase -i --autostash"
 alias gdelub="git branch --merged | egrep -v \"(^\*|master|main)\" | xargs git branch -d"
 alias glog="git log --graph --pretty=format:'%C(yellow)%h%Creset  %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit -10"
+alias gcoi="git-checkout-interactive"
+alias cdgr="cd-git-root"
 
-gch() {
+# interactively switch branch using fzf
+git-checkout-interactive() {
   git checkout $(git for-each-ref refs/heads/ --format='%(refname:short)' | fzf)
+}
+
+# cd to the root of this Git project
+cd-git-root() {
+  cd "$(git rev-parse --show-toplevel 2>/dev/null)"
 }

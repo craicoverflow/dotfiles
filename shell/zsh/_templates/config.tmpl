@@ -17,6 +17,9 @@ ZSH_THEME="${THEME}"
 
 plugins=(${PLUGINS})
 
+setopt nocaseglob # ignore case
+setopt correct # correct spelling mistakes
+
 PROMPT='$(kube_ps1)'$PROMPT
 
 source $ZSH/oh-my-zsh.sh

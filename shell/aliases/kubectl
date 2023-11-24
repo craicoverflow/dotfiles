@@ -1257,3 +1257,8 @@ function kubectl-get_failing_pods() {
 function kubectl-remote_shell() {
   kubectl ${@} run --restart=Never --rm -i --tty alpine --image=alpine -- sh
 }
+
+function kubectl-get_all() {
+  kubectl "$1" api-resources --api-group "$2" --verbs=list --namespaced -o name \
+  | xargs -n 1 kubectl get --show-kind --ignore-not-found
+}
