@@ -1,7 +1,6 @@
 brew:
   taps:
     romkatv/powerlevel10k: true
-    petere/postgresql: false
     homeport/tap: true
   packages:
     hugo: true
@@ -48,12 +47,12 @@ vscode:
     mikestead.dotenv: true
     Tim-Koehler.helm-intellisense: true
     DavidAnson.vscode-markdownlint: true
-    lunuan.kubernetes-templates: true
-    ms-azuretools.vscode-docker: true
-    ms-kubernetes-tools.vscode-kubernetes-tools: true
+    lunuan.kubernetes-templates: false
+    ms-azuretools.vscode-docker: false
+    ms-kubernetes-tools.vscode-kubernetes-tools: false
     ms-vscode.remote-repositories: true
     redhat.vscode-yaml: true
-    vsls-contrib.codetour: true
+    vsls-contrib.codetour: false
 zsh:
   theme: spaceship
   plugins:
