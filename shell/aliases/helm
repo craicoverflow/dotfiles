@@ -1,0 +1,3 @@
+alias hls="helm ls"
+alias hgm="helm get manifest"
+alias hgv="helm get values"

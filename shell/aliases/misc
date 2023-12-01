@@ -9,6 +9,7 @@ alias kshell="kubectl-remote_shell"
 alias grep=egrep
 alias gr=egrep
 alias reload="source ~/.zshrc"
+alias rl="reload"
 
 # delete all contexts that match the string
 kxgd() {
@@ -29,4 +30,13 @@ ls-hashdirs() {
 
 cd-subproject() {
   cd "${1:-.}/$(find . -maxdepth 5 -type d -name .git | sed 's|/.git$||' | fzf --preview 'tree -L 2 ./{}')"
+}
+
+make-sh() {
+  filepath="$(pwd)/$1"
+  echo $filepath
+
+  touch $filepath \
+  && echo "#!/bin/sh" > $filepath \
+  && echo "echo \"hello world\"" >> $filepath && chmod +x $filepath
 }
