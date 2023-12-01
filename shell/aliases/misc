@@ -2,8 +2,8 @@ alias cat="bat"
 alias ls="exa"
 alias cl="clear"
 alias copydir="echo $pwd | clipcopy"
-alias kctx="kubectx"
-alias kns="kubens"
+alias kctx="kubie-ctx"
+alias kns="kubie ns"
 alias kvs="kubectl view-secret"
 alias kshell="kubectl-remote_shell"
 alias grep=egrep
@@ -12,31 +12,49 @@ alias reload="source ~/.zshrc"
 alias rl="reload"
 
 # delete all contexts that match the string
-kxgd() {
+function kxgd() {
   kubectx -d $(kubectx | cat | grep "$1")
 }
 
 zsh_dir_hashes_path="$HOME/.local/share/.zsh_dir_hashes"
 [ -f $zsh_dir_hashes_path ] && $zsh_dir_hashes_path
-hashdir() {
+function hashdir() {
     [ -z "$1" ] && echo "Pass hash to use for dir" && return 1
     hash -d "$1"="$(pwd)"
     echo hash -d "$1"=\""$(pwd)"\" >>$zsh_dir_hashes_path
 }
 
-ls-hashdirs() {
+function ls-hashdirs() {
   cat $zsh_dir_hashes_path
 }
 
-cd-subproject() {
+function cd-subproject() {
   cd "${1:-.}/$(find . -maxdepth 5 -type d -name .git | sed 's|/.git$||' | fzf --preview 'tree -L 2 ./{}')"
 }
 
-make-sh() {
+function make-sh() {
   filepath="$(pwd)/$1"
   echo $filepath
 
   touch $filepath \
   && echo "#!/bin/sh" > $filepath \
   && echo "echo \"hello world\"" >> $filepath && chmod +x $filepath
+}
+
+function kubie-ctx() {
+  if [[ -z "$1" || "$1" =~ ^--kubeconfig ]]
+  then
+    kubie ctx --kubeconfig=${KUBECONFIG}
+  elif [[ ! "$1" =~ ^- ]]; then
+    selected_config=$(ls ~/.kube/config-files | fzf -q "$@" -1)
+    if [ -z "$selected_config" ]; then
+      >&2 echo "No Kubeconfigs found that match pattern \"$@"\"
+      return
+    fi
+    kubie ctx --kubeconfig=$HOME/.kube/config-files/$selected_config
+  elif [[ "$1" == "-c" ]]; then
+    kubie info ctx
+  else
+    kubie ctx ${@}
+  fi
 }

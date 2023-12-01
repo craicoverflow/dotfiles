@@ -23,7 +23,6 @@ brew:
     tree: true
 kubectl:
   enabled: true
-  kubectx: true
   kubeie: true
   krew:
     enabled: true
