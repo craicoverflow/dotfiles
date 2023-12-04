@@ -59,7 +59,7 @@ function kubie-ctx() {
       >&2 echo "No Kubeconfigs found that match pattern \"$qstring"\"
       return
     fi
-    export ROOT_KUBECONFIG=$HOME/.kube/config-files/$selected_config
+    export ROOT_KUBECONFIG=$KUBECONFIGS_DIR/$selected_config
     kubie ctx --kubeconfig=$ROOT_KUBECONFIG
   elif [[ "$1" == "-c" ]]; then
     kubectl config current-context
