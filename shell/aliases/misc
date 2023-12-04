@@ -64,7 +64,6 @@ function kubie-ctx() {
   elif [[ "$1" == "-c" ]]; then
     kubectl config current-context
   else
-    echo $kubeconfig
     kubie ctx ${@} --kubeconfig=${kubeconfig}
   fi
 }
