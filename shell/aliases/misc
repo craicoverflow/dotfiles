@@ -4,6 +4,8 @@ alias cl="clear"
 alias copydir="echo $pwd | clipcopy"
 alias kctx="kubie-ctx"
 alias kns="kubie ns"
+alias kcctx='kctx -c'
+alias kcns='kubie info ns'
 alias kvs="kubectl view-secret"
 alias kshell="kubectl-remote_shell"
 alias grep=egrep
@@ -42,19 +44,27 @@ function make-sh() {
 }
 
 function kubie-ctx() {
+  local kubeconfig=${ROOT_KUBECONFIG:-$KUBECONFIG}
   if [[ -z "$1" || "$1" =~ ^--kubeconfig ]]
   then
-    kubie ctx --kubeconfig=${KUBECONFIG}
-  elif [[ ! "$1" =~ ^- ]]; then
-    selected_config=$(ls ~/.kube/config-files | fzf -q "$@" -1)
+    export ROOT_KUBECONFIG=${kubeconfig}
+    kubie ctx --kubeconfig=${kubeconfig}
+  elif [[ ! "$1" =~ ^- || "$1" == "-l" ]]; then
+    qstring="$@"
+    if [[ "$1" == "-l" ]]; then
+      qstring=""
+    fi
+    selected_config=$(ls ~/.kube/config-files | fzf -q "$qstring" -1)
     if [ -z "$selected_config" ]; then
-      >&2 echo "No Kubeconfigs found that match pattern \"$@"\"
+      >&2 echo "No Kubeconfigs found that match pattern \"$qstring"\"
       return
     fi
-    kubie ctx --kubeconfig=$HOME/.kube/config-files/$selected_config
+    export ROOT_KUBECONFIG=$HOME/.kube/config-files/$selected_config
+    kubie ctx --kubeconfig=$ROOT_KUBECONFIG
   elif [[ "$1" == "-c" ]]; then
-    kubie info ctx
+    kubectl config current-context
   else
-    kubie ctx ${@}
+    echo $kubeconfig
+    kubie ctx ${@} --kubeconfig=${kubeconfig}
   fi
 }
