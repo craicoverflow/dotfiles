@@ -1249,7 +1249,10 @@ alias kgcmwslowiden='kubectl get configmap --watch --show-labels -o=wide --names
 alias kgsecwslowiden='kubectl get secret --watch --show-labels -o=wide --namespace'
 alias kgfp='kubectl-get_failing_pods'
 alias kgfpa='kubectl-get_failing_pods -A'
-alias kdelfzrs='kubectl-delete_finalizers'
+alias kdelfzrs='kubectl delete-finalizers'
+alias kneat='kubectl-neat'
+alias kgclma='kubectl-get_cluster_machines'
+alias kfirst='kubectl-first'
 
 function kubectl-get_failing_pods() {
   kubectl get pods ${@} | egrep -v "(Running|Completed)"
@@ -1264,6 +1267,19 @@ function kubectl-get_all() {
   | xargs -n 1 kubectl get --show-kind --ignore-not-found
 }
 
-function kubectl-delete_finalizers() {
-  kubectl patch "$1" "$2" -p '{"metadata":{"finalizers":null}}' --type=merge
+## WIP
+function kubectl-set_webhook_failure_policy() {
+  type="$1"
+  if [[ -z $type ]]; then echo "Pass 'validating' or 'mutating', example: 'kubectl-set_webhook_failure_policy validating name Ignore'" && return; fi
+
+  exit 0
+
+  kubectl patch validatingwebhookconfiguration capi-validating-webhook-configuration \
+  --type='json' -p='[{"op": "replace", "path": "/webhooks/0/failurePolicy", "value":"Fail"}]'
+}
+
+function kubectl-get_cluster_machines() {
+  all_args=(${@})
+  extra_args=("${all_args[@]:1}")
+  kubectl ${extra_args} get ma --selector cluster.x-k8s.io/cluster-name="$1"
 }

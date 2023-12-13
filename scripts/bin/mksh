@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+
+filepath="$1"
+echo $filepath
+
+touch $filepath \
+&& echo "#!/usr/bin/env bash" > $filepath \
+&& echo "" >> $filepath && chmod +x $filepath

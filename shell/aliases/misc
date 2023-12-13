@@ -33,7 +33,7 @@ function cd-subproject() {
   cd "${1:-.}/$(find . -maxdepth 5 -type d -name .git | sed 's|/.git$||' | fzf --preview 'tree -L 2 ./{}')"
 }
 
-function make-sh() {
+function mksh() {
   filepath="$(pwd)/$1"
   echo $filepath
 

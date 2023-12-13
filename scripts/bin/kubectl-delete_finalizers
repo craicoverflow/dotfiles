@@ -1,0 +1,12 @@
+#!/bin/sh
+
+function main() {
+  all_args=(${@})
+  extra_args=("${all_args[@]:2}")
+
+  type="$1"
+  name="$2"
+  eval "kubectl ${extra_args} patch $type $name -p '{\"metadata\":{\"finalizers\":null}}' --type=merge"
+}
+
+main "$@"

@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+
+# Script to get the first object of its kind
+# Examples:
+#  kubectl first pod
+
+all_args=(${@})
+extra_args=("${all_args[@]:1}")
+kind="$1"
+
+eval "kubectl ${extra_args} get ${kind} $(kubectl get ${kind} --no-headers | awk 'NR==1{ print $1 }')"
