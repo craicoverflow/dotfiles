@@ -1,8 +1,26 @@
 #!/usr/bin/env bash
 
-filepath="$1"
-echo $filepath
+set -e
+set -u
+set -o pipefail
+
+source $DOTFILES_ROOT/cmd/_util.sh
+
+input_path="$1"
+
+folder=$(realpath $(dirname $input_path))
+file=$(basename $input_path)
+
+filepath="$folder/$file"
+
+if [ -f $filepath ]
+then
+  log::info "File already exists: $filepath"
+  exit 1
+fi
 
 touch $filepath \
 && echo "#!/usr/bin/env bash" > $filepath \
 && echo "" >> $filepath && chmod +x $filepath
+
+log::info "Created executable file: $filepath"
