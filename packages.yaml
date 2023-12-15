@@ -35,23 +35,6 @@ kubectl:
       neat: true
 vscode:
   enabled: true
-  extensions:
-    alefragnani.Bookmarks: true
-    alefragnani.project-manager: true
-    eamodio.gitlens: true
-    Equinusocio.vsc-community-material-theme: true
-    golang.go: true
-    vscode-icons-team.vscode-icons: true
-    vscodevim.vim: true
-    mikestead.dotenv: true
-    Tim-Koehler.helm-intellisense: true
-    DavidAnson.vscode-markdownlint: true
-    lunuan.kubernetes-templates: false
-    ms-azuretools.vscode-docker: false
-    ms-kubernetes-tools.vscode-kubernetes-tools: false
-    ms-vscode.remote-repositories: true
-    redhat.vscode-yaml: true
-    vsls-contrib.codetour: false
 zsh:
   theme: spaceship
   plugins:

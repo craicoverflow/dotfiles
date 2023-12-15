@@ -144,27 +144,12 @@ install_vscode() {
   fi
   brew_install visual-studio-code
 
-  enabled_extensions=($(get_enabled_items '.vscode.extensions'))
+  enabled_extensions=$(cat $DOTFILES_ROOT/vscode/extensions)
   log::info "Installing Visual Studio Code extensions."
-  for i in "${enabled_extensions[@]}"
-  do
-    : 
-      if ! code --list-extensions | grep $i &>/dev/null; then
-        log::info "Installing extension $i ⚙️ "
-        code --install-extension $i && log::info "$i is installed."
-      fi
-  done
-
-  disabled_extensions=($(get_disabled_items '.vscode.extensions'))
-  log::info "Uninstalling Visual Studio Code extensions."
-  for i in "${disabled_extensions[@]}"
-  do
-    : 
-      if ! code --list-extensions | grep $i &>/dev/null; then
-        log::info "Uninstalling extension $1i⚙️ "
-        code --uninstall-extension $i && log::info "$i is uninstalled."
-      fi
-  done
+  while read e; do
+    log::info "Installing extension $e ⚙️ "
+    code --install-extension $e
+  done <$DOTFILES_ROOT/vscode/extensions
 }
 
 install_kubectl_krew() {
