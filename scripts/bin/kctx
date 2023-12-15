@@ -24,7 +24,7 @@ function main() {
       exit 0
     fi
     export ROOT_KUBECONFIG=$KUBECONFIGS_DIR/$selected_config
-    kubectx --kubeconfig=$ROOT_KUBECONFIG
+    kubie ctx --kubeconfig=$ROOT_KUBECONFIG
   elif [[ "$1" == "-c" ]]; then
     kubectl config current-context
   else

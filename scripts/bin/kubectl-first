@@ -8,4 +8,12 @@ all_args=(${@})
 extra_args=("${all_args[@]:1}")
 kind="$1"
 
-eval "kubectl ${extra_args} get ${kind} $(kubectl get ${kind} --no-headers | awk 'NR==1{ print $1 }')"
+source "$DOTFILES_ROOT/cmd/_util.sh"
+
+obj_name=$(kubectl get ${kind} --no-headers 2>/dev/null | awk 'NR==1{ print $1 }')
+
+if [[ -z $obj_name ]]; then
+  fail "no ${kind} objects found in the current namespace \"$(kubectl config view --minify -o jsonpath='{..namespace}')\""
+fi
+
+eval "kubectl ${extra_args} get ${kind} ${obj_name}"
