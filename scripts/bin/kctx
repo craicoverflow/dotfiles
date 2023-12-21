@@ -1,22 +1,30 @@
-#!/bin/sh
+#!/usr/bin/env bash
 
 function main() {
   local kubeconfig=${ROOT_KUBECONFIG:-$KUBECONFIG}
-  if [[ -z "$1" || "$1" =~ ^--kubeconfig ]]
+  local arg1="$1"
+  local arg2="$2"
+  local is_ctx_selected=false
+  if [[ -z $arg1 || $arg1 =~ ^--kubeconfig ]]
   then
     export ROOT_KUBECONFIG=${kubeconfig}
     kubie ctx --kubeconfig=${kubeconfig}
-  elif [[ ! "$1" =~ ^- && "$2" == "-e" ]]; then
-    local selected_config="$KUBECONFIGS_DIR/$1"
+    is_ctx_selected=true
+  elif [[ ! $arg1 =~ ^- && $arg2 == "-e" ]]; then
+    local selected_config="$KUBECONFIGS_DIR/$arg1"
     if [[ ! -f $selected_config ]]; then
-      >&2 echo "Error: no Kubeconfig file \"$1\" in $KUBECONFIGS_DIR"
+      >&2 echo "Error: no Kubeconfig file \"$arg1\" in $KUBECONFIGS_DIR"
       exit 1
     fi
     export ROOT_KUBECONFIG=$selected_config
     kubie ctx --kubeconfig=$ROOT_KUBECONFIG
-  elif [[ ! "$1" =~ ^- || "$1" == "-l" ]]; then
+    is_ctx_selected=true
+  elif [[ ! $arg1 =~ ^- || $arg1 == "-l" ]]; then
     qstring="$@"
-    if [[ "$1" == "-l" ]]; then
+
+    if [[ -f "$KUBECONFIGS_DIR/$arg1" ]]; then
+      kctx $arg1 -e
+    elif [[ $arg1 == "-l" ]]; then
       qstring=""
     fi
     local selected_config=$(ls ~/.kube/config-files | fzf -q "$qstring" -1)
@@ -25,7 +33,7 @@ function main() {
     fi
     export ROOT_KUBECONFIG=$KUBECONFIGS_DIR/$selected_config
     kubie ctx --kubeconfig=$ROOT_KUBECONFIG
-  elif [[ "$1" == "-c" ]]; then
+  elif [[ $arg1 == "-c" ]]; then
     kubectl config current-context
   else
     kubie ctx ${@} --kubeconfig=${kubeconfig}
