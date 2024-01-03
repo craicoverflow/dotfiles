@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+cd $DOTFILES_ROOT
+git stash
+git pull origin main --rebase
+git stash pop
+dotfiles install

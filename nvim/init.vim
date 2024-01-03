@@ -285,6 +285,7 @@ call plug#begin()
   Plug 'jiangmiao/auto-pairs'
   Plug 'preservim/nerdtree'
   Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
+  Plug 'junegunn/fzf.vim'
 
   " Completion / linters / formatters
   Plug 'neoclide/coc.nvim', {'branch': 'release', 'do': 'npm install'}
