@@ -10,6 +10,8 @@ brew:
     git: true
     helm: true
     kind: true
+    kubie: true
+    gron: true
     fx: true
     exa: true
     bat: true
@@ -23,7 +25,6 @@ brew:
     tree: true
 kubectl:
   enabled: true
-  kubeie: true
   krew:
     enabled: true
     plugins:
