@@ -20,6 +20,8 @@ plugins=(${PLUGINS})
 setopt nocaseglob # ignore case
 setopt correct # correct spelling mistakes
 
+setopt inc_append_history # save command to history
+
 PROMPT='$(kube_ps1)'$PROMPT
 
 export KUBECONFIG=$HOME/.kube/config
