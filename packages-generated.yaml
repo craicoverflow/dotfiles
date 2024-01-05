@@ -1,0 +1,68 @@
+brew:
+  packages:
+    raycast: true
+    hugo: true
+    jq: true
+    colima: false
+    wget: true
+    git: true
+    helm: true
+    kind: true
+    fx: true
+    exa: true
+    bat: true
+    fzf: true
+    neovim: true
+    direnv: true
+    k9s: true
+    stern: true
+    docker: true
+    dyff: true
+    tree: true
+  taps:
+    romkatv/powerlevel10k: true
+    homeport/tap: true
+kubectl:
+  enabled: true
+  kubeie: true
+  krew:
+    enabled: true
+    plugins:
+      stern: true
+      view-secret: true
+      explore: true
+      tree: true
+      foreach: true
+      neat: true
+vscode:
+  enabled: true
+  extensions:
+    alefragnani.Bookmarks: true
+    alefragnani.project-manager: true
+    eamodio.gitlens: true
+    Equinusocio.vsc-community-material-theme: true
+    golang.go: true
+    vscode-icons-team.vscode-icons: true
+    vscodevim.vim: true
+    mikestead.dotenv: true
+    Tim-Koehler.helm-intellisense: true
+    DavidAnson.vscode-markdownlint: true
+    lunuan.kubernetes-templates: false
+    ms-azuretools.vscode-docker: false
+    ms-kubernetes-tools.vscode-kubernetes-tools: false
+    ms-vscode.remote-repositories: true
+    redhat.vscode-yaml: true
+    vsls-contrib.codetour: false
+zsh:
+  theme: spaceship
+  plugins:
+    - name: git
+    - name: sudo
+    - name: copybuffer
+    - name: kubectl
+    - name: zsh-autosuggestions
+      source: github.com/zsh-users/zsh-autosuggestions
+    - name: zsh-syntax-highlighting
+      source: github.com/zsh-users/zsh-syntax-highlighting
+hooks:
+  - scripts/create-bin-dir

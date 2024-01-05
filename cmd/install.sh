@@ -4,7 +4,7 @@ set -o pipefail
 
 INSTALLDIR=$(pwd)
 cmd_dir="$(dirname "$0")"
-generated_dotfiles_specfile="$DOTFILES_ROOT/packages-generated.yaml"
+generated_dotfiles_specfile="$DOTFILES_ROOT/config-generated.yaml"
 zsh_root=${ZSH_CUSTOM:-~/.oh-my-zsh/custom}
 YQ_PATH="${YQ_PATH:-yq}"
 source ${cmd_dir}/_util.sh
@@ -40,8 +40,8 @@ get_config() {
 
 init_config() {
   log::debug "Initializing config.."
-  touch $DOTFILES_ROOT/packages-local.yaml
-  execute "${YQ_PATH} '. *n load(\"$DOTFILES_ROOT/packages.yaml\")' $DOTFILES_ROOT/packages-local.yaml" > $generated_dotfiles_specfile
+  touch $DOTFILES_ROOT/config.local.yaml
+  execute "${YQ_PATH} '. *n load(\"$DOTFILES_ROOT/config.yaml\")' $DOTFILES_ROOT/config.local.yaml" > $generated_dotfiles_specfile
 }
 
 get_config_value() {

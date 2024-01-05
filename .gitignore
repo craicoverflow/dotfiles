@@ -2,4 +2,4 @@
 /bin
 *local*
 .dotfilesrc
-packages-generated.yaml
+config-generated.yaml

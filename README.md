@@ -16,7 +16,7 @@ This will install the `dotfiles` binary and add it to your path.
 
 ### Install packages
 
-To install the packages found in `$DOTFILES_ROOT/packages.yaml`:
+To install the packages found in `$DOTFILES_ROOT/config.yaml`:
 
 ```sh
 dotfiles install
@@ -28,7 +28,7 @@ dotfiles install
 YQ_PATH=$HOME/custom/bin/yq dotfiles install
 ```
 
-If you wish to disable installation of some of these packages, add a `packages-local.yaml` file to the `$DOTFILES_ROOT` folder, and only the configs you need to disable and set the value to `false`:
+If you wish to disable installation of some of these packages, add a `config.local.yaml` file to the `$DOTFILES_ROOT` folder, and only the configs you need to disable and set the value to `false`:
 
 ```diff
 ---
