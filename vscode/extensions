@@ -7,6 +7,7 @@ Equinusocio.vsc-material-theme
 equinusocio.vsc-material-theme-icons
 GitHub.remotehub
 golang.go
+johnpapa.vscode-peacock
 kennylong.kubernetes-yaml-formatter
 lunuan.kubernetes-templates
 mikestead.dotenv
@@ -14,6 +15,7 @@ ms-azuretools.vscode-docker
 ms-kubernetes-tools.vscode-kubernetes-tools
 ms-python.python
 ms-vscode.remote-repositories
+oderwat.indent-rainbow
 redhat.vscode-yaml
 Serge.vsc-material-theme-italicize
 Tim-Koehler.helm-intellisense
