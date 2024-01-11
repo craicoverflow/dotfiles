@@ -1253,8 +1253,9 @@ alias kdelfzrs='kubectl delete-finalizers'
 alias kneat='kubectl-neat'
 alias kgclma='kubectl-get_cluster_machines'
 alias kfirst='kubectl-first'
-alias kres='k rollout restart'
-alias kresdeploy='k rollout restart deployment'
+alias kres='kubectl rollout restart'
+alias kresdeploy='kubectl rollout restart deployment'
+alias kghr='kubectl get helmrelease'
 
 function kubectl-get_failing_pods() {
   kubectl get pods ${@} | egrep -v "(Running|Completed)"
