@@ -63,4 +63,4 @@ hooks:
     # This example sets the terminal back to the shell name
     # Default: none
     stop_ctx: >
-        echo -en "\033]1; $SHELL \007
+        echo -en "\033]1; $SHELL \007"
