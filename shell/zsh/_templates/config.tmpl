@@ -1,3 +1,6 @@
+autoload -Uz compinit
+compinit
+
 # You may need to manually set your language environment
 # export LANG=en_US.UTF-8
 
@@ -26,5 +29,7 @@ PROMPT='$(kube_ps1)'$PROMPT
 
 export KUBECONFIG=$HOME/.kube/config
 export KUBECONFIGS_DIR=$HOME/.kube/config-files
-
 source $ZSH/oh-my-zsh.sh
+
+# env vars
+export DOCKER_HUB_REPO=docker.io

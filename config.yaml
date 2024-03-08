@@ -10,6 +10,7 @@ brew:
     git: true
     helm: true
     kind: true
+    pgrep: true
     kubie: true
     gron: true
     fx: true

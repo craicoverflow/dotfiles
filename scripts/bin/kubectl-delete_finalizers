@@ -6,6 +6,7 @@ function main() {
 
   type="$1"
   name="$2"
+  eval "kubectl ${extra_args} delete $type $name --wait=false"
   eval "kubectl ${extra_args} patch $type $name -p '{\"metadata\":{\"finalizers\":null}}' --type=merge"
 }
 
