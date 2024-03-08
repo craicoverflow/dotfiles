@@ -1268,24 +1268,104 @@ function kubectl-remote_shell() {
   kubectl ${@} run --restart=Never --rm -i --tty alpine --image=${DOCKER_HUB_REPO}/alpine:3.19.1 -- sh
 }
 
-function kubectl-get_all() {
-  kubectl "$1" api-resources --api-group "$2" --verbs=list --namespaced -o name \
-  | xargs -n 1 kubectl get --show-kind --ignore-not-found
+function kubectl-get-ctx() {
+  KFG_DIR=${KFG_DIR:-~/.kube/config.d}
+  if [ -d "${KFG_DIR}" ] && [[ "$KUBECONFIG" != "$HOME/.kube/config" ]]; then
+    if [[ "${1}" == "-z" ]]; then
+      shift
+      find "${KFG_DIR}" -type f -print0 | xargs -0r stat -f "%N" | fzf --filter="${1}"
+    else
+      find "${KFG_DIR}/" -type f -regex ".*${1}.*" -print "%f\n"
+    fi
+    return
+  fi
+
+  if [[ "${1}" == "-z" ]]; then
+    shift
+    \kubectl config get-contexts -o name | fzf --filter="${1}"
+  else
+    re=$(sed 's/[.$]/[&]/g; s/?/./g; s/\*/.*/g; s/\^/\\^/g' <<<"$1")
+    \kubectl config get-contexts -o name | grep "${re}"
+  fi
 }
 
-## WIP
-function kubectl-set_webhook_failure_policy() {
-  type="$1"
-  if [[ -z $type ]]; then echo "Pass 'validating' or 'mutating', example: 'kubectl-set_webhook_failure_policy validating name Ignore'" && return; fi
-
-  exit 0
-
-  kubectl patch validatingwebhookconfiguration capi-validating-webhook-configuration \
-  --type='json' -p='[{"op": "replace", "path": "/webhooks/0/failurePolicy", "value":"Fail"}]'
+function kctx() {
+  if [[ "${1}" == "kind" ]]; then
+    export KUBECONFIG=~/.kube/kind-config
+    return
+  fi
+  if [[ "${1}" == "-c" ]]; then
+    kubectx -c
+    return
+  fi
+  if [[ "${1}" == '-l' ]]; then
+    shift
+    kubectl-get-ctx -z "${1}"
+    return
+  fi
+  KFG_DIR=${KFG_DIR:-~/.kube/config.d}
+  if [ -d "${KFG_DIR}" ] && [[ "$KUBECONFIG" != "~/.kube/config" ]]; then
+    if [ -n "$1" ] && [ -f "${KFG_DIR}/${1}" ]; then
+      export KUBECONFIG="${KFG_DIR}/${1}"
+      return
+    fi
+    files=$(ls -1 "${KFG_DIR}/" | fzf --filter="${1}")
+    l=$(echo -n "${files}" | grep -c '^')
+    if [ $l -eq 0 ]; then
+      echo "no matching context found"
+      return
+    fi
+    if [ $l -eq 1 ]; then
+      export KUBECONFIG="${KFG_DIR}/${files}"
+      return
+    fi
+    CTX=$(echo -n "${files}"| fzf)
+    if [ ! -f "${KFG_DIR}/${CTX}" ]; then
+      echo "no matching context found"
+      return
+    fi
+    export KUBECONFIG="${KFG_DIR}/${CTX}"
+    return
+  fi
+  kubectx "${@}"
 }
 
-function kubectl-get_cluster_machines() {
-  all_args=(${@})
-  extra_args=("${all_args[@]:1}")
-  kubectl ${extra_args} get ma --selector cluster.x-k8s.io/cluster-name="$1"
+function kcfg() {
+  KFG=${KUBECONFIG:-~/.kube/config}
+  KFG_DIR=${KFG_DIR:-~/.kube/config.d}
+  case "$1" in
+    split)
+      >&2 echo "Splitting Kubeconfigs into separate files..."
+      mkdir -p "${KFG_DIR}"
+      for ctx in $(\kubectl --kubeconfig="${KFG}" config get-contexts -o name); do
+        \kubectl --kubeconfig="${KFG}" config view --minify --flatten --raw --context=${ctx} > "${KFG_DIR}/${ctx}"
+      done
+      chmod 600 "${KFG_DIR}"/*
+      if [[ "$2" == "-p" ]] || [[ "$2" == "--purge" ]]; then
+        rm "${KFG}"
+      fi
+      >&2 echo "Done."
+      ;;
+    merge)
+      DST=${3:-~/.kube/config}
+      if [ -z "$2" ]; then
+        echo 'Usage:'
+        echo -e '\tkcfg merge <source_cfg> [<dest_cfg>]'
+        echo -e '\tuse "all" as source_cfg to merge all configuration files'
+        return 1
+      fi
+      if [[ "$2" == "all" ]]; then
+        for CTX in $(ls -1 ${KFG_DIR}); do
+          KUBECONFIG="${DST}:${KFG_DIR}/${CTX}" \kubectl config view --flatten --raw >> ${DST}
+        done
+      else
+        KUBECONFIG="${DST}:${2}" \kubectl config view --flatten --raw >> ${DST}
+      fi
+      ;;
+    *)
+      echo -e "Unknown command!\n Available commands are:"
+      echo -e " split\tSplit ${KFG} into separate files under ${KFG_DIR}/ (-p to delete ${KFG} in the end)"
+      echo -e " merge\tMerge two kubectl config files (kcfg merge <source_cfg> [<dest_cfg>])"
+      ;;
+  esac
 }

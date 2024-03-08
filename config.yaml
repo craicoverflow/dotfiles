@@ -7,11 +7,12 @@ brew:
     jq: true
     colima: false
     wget: true
+    rename: true
     git: true
     helm: true
     kind: true
     pgrep: true
-    kubie: true
+    kubie: false
     gron: true
     fx: true
     exa: true

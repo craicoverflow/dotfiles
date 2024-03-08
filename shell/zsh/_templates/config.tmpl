@@ -27,8 +27,7 @@ setopt inc_append_history # save command to history
 
 PROMPT='$(kube_ps1)'$PROMPT
 
-export KUBECONFIG=$HOME/.kube/config
-export KUBECONFIGS_DIR=$HOME/.kube/config-files
+export KUBECONFIG=~/.kube/config
 source $ZSH/oh-my-zsh.sh
 
 # env vars
