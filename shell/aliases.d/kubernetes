@@ -1307,24 +1307,27 @@ function kctx() {
   if [ -d "${KFG_DIR}" ] && [[ "$KUBECONFIG" != "~/.kube/config" ]]; then
     if [ -n "$1" ] && [ -f "${KFG_DIR}/${1}" ]; then
       export KUBECONFIG="${KFG_DIR}/${1}"
+      echo "✔ Switched to context \"$(kctx -c)\""
       return
     fi
     files=$(ls -1 "${KFG_DIR}/" | fzf --filter="${1}")
     l=$(echo -n "${files}" | grep -c '^')
     if [ $l -eq 0 ]; then
-      echo "no matching context found"
+      >&2 echo "no matching context found"
       return
     fi
     if [ $l -eq 1 ]; then
       export KUBECONFIG="${KFG_DIR}/${files}"
+      >&2 echo "✔ Switched to context \"$(kctx -c)\""
       return
     fi
     CTX=$(echo -n "${files}"| fzf)
     if [ ! -f "${KFG_DIR}/${CTX}" ]; then
-      echo "no matching context found"
+      >&2 echo "no matching context found"
       return
     fi
     export KUBECONFIG="${KFG_DIR}/${CTX}"
+    >&2 echo "✔ Switched to context \"$(kctx -c)\""
     return
   fi
   kubectx "${@}"
@@ -1341,10 +1344,11 @@ function kcfg() {
         \kubectl --kubeconfig="${KFG}" config view --minify --flatten --raw --context=${ctx} > "${KFG_DIR}/${ctx}"
       done
       chmod 600 "${KFG_DIR}"/*
+      rename -f 's/:/./g' "${KFG_DIR}"/*
       if [[ "$2" == "-p" ]] || [[ "$2" == "--purge" ]]; then
         rm "${KFG}"
       fi
-      >&2 echo "Done."
+      >&2 echo "✔ Done."
       ;;
     merge)
       DST=${3:-~/.kube/config}
