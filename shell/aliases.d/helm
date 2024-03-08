@@ -1,4 +1,0 @@
-alias hls="helm ls"
-alias hlsa="helm ls -a"
-alias hgm="helm get manifest"
-alias hgv="helm get values"
