@@ -6,7 +6,7 @@
 [[ ! -f $DOTFILES_ROOT/p10k/config ]] || source $DOTFILES_ROOT/p10k/config
 
 ## Source all alias files
-for f in $DOTFILES_ROOT/shell/aliases/*
+for f in $DOTFILES_ROOT/shell/aliases.d/*
 do 
   source $f
 done
