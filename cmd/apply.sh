@@ -24,7 +24,7 @@ apply_files() {
 		count=$(echo $(diff $to $from --suppress-common-lines | wc -l))
 
 		if [[ "$count" != 0 ]]; then
-			cp $from $to
+			cp -r $from $to
 		fi
 
 	done <$file
