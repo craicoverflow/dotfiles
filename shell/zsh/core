@@ -1,5 +1,24 @@
+autoload -Uz compinit
+compinit
+
+# You may need to manually set your language environment
+# export LANG=en_US.UTF-8
+
+# Preferred editor for local and remote sessions
+if [[ -n $SSH_CONNECTION ]]; then
+  export EDITOR='vim'
+else
+  export EDITOR='nvim'
+fi
+
+export ZSH="$HOME/.oh-my-zsh"
+
 source <(kubectl completion zsh &> /dev/null)
 eval "$(direnv hook zsh)"
+
+ZSH_THEME="spaceship"
+
+plugins=(git sudo copybuffer kubectl fzf zsh-autosuggestions zsh-syntax-highlighting)
 
 setopt nocaseglob # ignore case
 setopt correct # correct spelling mistakes
@@ -22,7 +41,10 @@ export FZF_DEFAULT_COMMAND='ag --hidden -g ""'
 
 bindkey "^R" fzf-history-widget
 
+PROMPT='$(kube_ps1)'$PROMPT
+
 export KUBECONFIG=~/.kube/config
+source $ZSH/oh-my-zsh.sh
 
 # env vars
 export DOCKER_HUB_REPO=docker.io

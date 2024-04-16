@@ -33,7 +33,7 @@ print_diff() {
     		touch $to
 		fi
 
-		count=$(echo $(diff $to $from --suppress-common-lines | wc -l))
+		count=$(echo $(diff $from $to --suppress-common-lines | wc -l))
 		if [[ "$count" != 0 ]]; then
 			printf "${bold}FILE: $to : SOURCE: $from"
 			echo ""

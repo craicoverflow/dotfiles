@@ -303,7 +303,7 @@ install_zsh_plugins() {
 setup_zsh_profile() {
   export PLUGINS=${ZSH_PLUGINS[@]}
   export THEME=${ZSH_THEME}
-  envsubst '$PLUGINS,$THEME' < $DOTFILES_ROOT/shell/zsh/_templates/config.tmpl > $DOTFILES_ROOT/shell/zsh/config
+  envsubst '$PLUGINS,$THEME' < $DOTFILES_ROOT/shell/zsh/_templates/core.tmpl > $DOTFILES_ROOT/shell/zsh/core
 }
 
 install_zsh() {
