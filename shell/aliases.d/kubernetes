@@ -1259,6 +1259,7 @@ alias kgpv='kubectl get pv'
 alias kgpvc='kubectl get pvc'
 alias krmfinalizers='kubectl patch -p '{"metadata":{"finalizers":null}}' --type=merge'
 alias kdebug="kubectl -n default debug -it --image=${KUBECTL_DEBUG_IMAGE}"
+alias ktns='kubectl take-namespace'
 
 function kubectl-get_failing_pods() {
   kubectl get pods ${@} | egrep -v "(Running|Completed)"
@@ -1289,7 +1290,12 @@ function kubectl-get-ctx() {
   fi
 }
 
+alias kctxu='kubectx -u'
 function kctx() {
+  if [[ "${1}" == "-u" ]]; then
+    export KUBECONFIG=~/.kube/config
+    return
+  fi
   if [[ "${1}" == "kind" ]]; then
     export KUBECONFIG=~/.kube/kind-config
     return

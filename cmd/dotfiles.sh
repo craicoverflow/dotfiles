@@ -12,7 +12,7 @@ case "$CMD" in
   ${cmd_dir}/add.sh $2 $3 $4
   ;;
 "edit")
-  code $DOTFILES_ROOT
+  ${EDITOR} $DOTFILES_ROOT
   ;;
 "diff")
   ${cmd_dir}/diff.sh
