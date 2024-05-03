@@ -54,3 +54,4 @@ zsh:
     source: github.com/zsh-users/zsh-syntax-highlighting
 hooks:
 - scripts/create-bin-dir
+- scripts/install-tpm

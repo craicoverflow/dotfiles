@@ -71,4 +71,16 @@ return require('packer').startup(function(use)
 	end}
 
   use('tpope/vim-rhubarb')
+
+  use({
+    "aserowy/tmux.nvim",
+    config = function() return require("tmux").setup() end
+  })
+
+  use("christoomey/vim-tmux-navigator")
+
+  --use({'alexghergh/nvim-tmux-navigation', config = function()
+  --  require('nvim-tmux-navigation').setup()end
+  --})
+
 end)

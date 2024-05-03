@@ -1,0 +1,1 @@
+alias source-tmux='tmux source ~/.tmux.conf'

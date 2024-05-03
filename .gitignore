@@ -3,3 +3,4 @@
 *local*
 .dotfilesrc
 config-generated.yaml
+nvim/plugin/packer_compiled.lua

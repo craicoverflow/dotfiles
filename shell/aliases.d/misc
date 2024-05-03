@@ -13,7 +13,7 @@ alias grep=egrep
 alias gr=egrep
 alias reload="source ~/.zshrc"
 alias rl="reload"
-alias edit-nvim-config="nvim ~/.config/nvim ."
+alias edit-nvim-config="cd ~/.config/nvim && nvim ."
 
 # delete all contexts that match the string
 function kxgd() {
