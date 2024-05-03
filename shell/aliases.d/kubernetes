@@ -1266,7 +1266,8 @@ function kubectl-get_failing_pods() {
 }
 
 function kubectl-remote_shell() {
-  kubectl ${@} run --restart=Never --rm -i --tty alpine --image=${DOCKER_HUB_REPO}/alpine:3.19.1 -- sh
+  image="${IMAGE:-alpine:3.19.1}"
+  kubectl ${@} run --restart=Never --rm -i --tty alpine --image=${DOCKER_HUB_REPO}/${image} -- sh
 }
 
 function kubectl-get-ctx() {
@@ -1378,6 +1379,92 @@ function kcfg() {
       echo -e " merge\tMerge two kubectl config files (kcfg merge <source_cfg> [<dest_cfg>])"
       ;;
   esac
+}
+
+function kubectl-parallel() {
+  KFG_DIR=${KFG_DIR:-~/.kube/config.d}
+
+  local args=()
+  local cmd="kubectl"
+  local follow="false"
+  while [[ $# -gt 0 ]]; do
+    key="$1"
+
+    case $key in
+    -f | --follow)
+      follow="true"
+      shift
+      ;;
+    -c | --command)
+      cmd="$2"
+      shift 2
+      ;;
+    --)
+      shift
+      args+="${@}"
+      break
+      ;;
+    *)
+      args+=("$1")
+      shift
+      ;;
+    esac
+  done
+
+  ctxs=$(kubectl-get-ctx "${args[1]}")
+  args[1]="${cmd}"
+
+  echo -e "Running:\n\t${args}\non:\n${ctxs}\n---"
+  echo -n "Are you sure? [y/N] "
+  read REPLY
+  if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+    return
+  fi
+  echo ""
+
+  suffix="$(tr -dc A-Za-z0-9 </dev/urandom | head -c 13 ; echo '')"
+  if [[ "${follow}" == "true" ]] && [ -x "$(command -v multitail)" ] && [ -n "$TMUX" ]; then
+    echo "${ctxs}" | xargs -P 10 -I {} touch /tmp/{}-${suffix}.kout
+    tmux split-window "multitail -f /tmp/*-${suffix}.kout"
+  fi
+
+  echo "${ctxs}" | xargs -P 10 -I {} -r -- sh -c 'export KUBECONFIG=${1}/{}; out="/tmp/{}-${2}.kout"; shift 2; eval "( ${*} ) > ${out} 2>&1"' -- "${KFG_DIR}" "${suffix}" "${args}"
+
+  # if using gnu parallel, you can live tail the outputs with the following:
+  # parallel --tagstring "{}:" --line-buffer tail -f {} ::: /tmp/*.kout
+  # or with multitail
+  # multitail -f /tmp/*.kout
+
+  for f in ${ctxs}; do
+    echo ">> $f"
+    cat "/tmp/${f}-${suffix}.kout"
+    echo "---"
+  done
+
+  rm -f /tmp/*-${suffix}.kout
+}
+alias kparallel='kubectl-parallel'
+alias hparallel='kubectl-parallel -c helm'
+
+function kubectl-get-ctx() {
+  KFG_DIR=${KFG_DIR:-~/.kube/config.d}
+  if [ -d "${KFG_DIR}" ] && [[ "$KUBECONFIG" != "~/.kube/config" ]]; then
+    if [[ "${1}" == "-z" ]]; then
+      shift
+      find "${KFG_DIR}" -type f -printf "%f\n" | fzf --filter="${1}"
+    else
+      find "${KFG_DIR}" -type f -regex ".*${1}.*"
+    fi
+    return
+  fi
+
+  if [[ "${1}" == "-z" ]]; then
+    shift
+    \kubectl config get-contexts -o name | fzf --filter="${1}"
+  else
+    re=$(sed 's/[.$]/[&]/g; s/?/./g; s/\*/.*/g; s/\^/\\^/g' <<<"$1")
+    \kubectl config get-contexts -o name | grep "${re}"
+  fi
 }
 
 alias hls="helm ls"
