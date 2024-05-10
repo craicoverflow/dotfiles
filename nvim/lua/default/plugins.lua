@@ -79,8 +79,6 @@ return require('packer').startup(function(use)
 
   use("christoomey/vim-tmux-navigator")
 
-  --use({'alexghergh/nvim-tmux-navigation', config = function()
-  --  require('nvim-tmux-navigation').setup()end
-  --})
+  use("marko-cerovac/material.nvim")
 
 end)

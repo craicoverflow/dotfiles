@@ -28,3 +28,5 @@ vim.opt.colorcolumn = "80"
 vim.g.mapleader = " "
 
 vim.opt.clipboard = "unnamedplus"
+
+vim.g.material_style = "darker"

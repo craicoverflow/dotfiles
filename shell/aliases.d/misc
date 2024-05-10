@@ -11,6 +11,7 @@ alias kms="kubectl modify-secret"
 alias kshell="kubectl-remote_shell"
 alias grep=egrep
 alias gr=egrep
+alias grop="gron|grep"
 alias reload="source ~/.zshrc"
 alias rl="reload"
 alias edit-nvim-config="cd ~/.config/nvim && nvim ."
