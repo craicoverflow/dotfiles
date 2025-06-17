@@ -18,7 +18,7 @@ case "$CMD" in
   ${cmd_dir}/diff.sh
   ;;
 "apply")
-  ${cmd_dir}/apply.sh
+  ${cmd_dir}/apply.sh $2
   ;;
 "download")
   ${cmd_dir}/download.sh
