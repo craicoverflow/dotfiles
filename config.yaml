@@ -16,7 +16,7 @@ brew:
     kubie: false
     gron: true
     fx: true
-    exa: true
+    eza: true
     bat: true
     fzf: true
     neovim: true
