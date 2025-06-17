@@ -217,6 +217,7 @@ install_kubectl() {
   elif [[ $enabled == true ]]
   then
     brew_install kubernetes-cli
+    install_kubectl_krew
   fi
 
   kubectx_enabled=($(get_config_value '.kubectl.kubectx'))
@@ -228,7 +229,6 @@ install_kubectl() {
     brew_uninstall kubectx
   fi
   
-  install_kubectl_krew
 }
 
 git_clone() {
@@ -312,7 +312,7 @@ install_zsh() {
 
   install_zsh_plugins
 
-  git_clone https://spaceship-prompt/spaceship-prompt $zsh_root/themes/spaceship-prompt
+  git_clone https://github.com/spaceship-prompt/spaceship-prompt $zsh_root/themes/spaceship-prompt
   ln -sf "$zsh_root/themes/spaceship-prompt/spaceship.zsh-theme" "$zsh_root/themes/spaceship.zsh-theme"
 }
 
