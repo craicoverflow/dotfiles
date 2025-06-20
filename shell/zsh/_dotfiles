@@ -1,0 +1,52 @@
+#compdef dotfiles
+
+_dotfiles() {
+  local -a commands options
+
+  commands=(
+    'install:Install dotfiles on the system'
+    'add:Add a file to dotfiles'
+    'edit:Open dotfiles in $EDITOR'
+    'diff:Show differences between local and tracked files'
+    'apply:Apply changes from dotfiles to local system'
+    'download:Download remote dotfiles'
+    'backup:Create a backup of current dotfiles'
+    'verify:Verify dotfiles configuration'
+    'status:Show status of tracked files'
+  )
+
+  options=(
+    '(-h --help)'{-h,--help}'[Show help message]'
+    '(-v --verbose)'{-v,--verbose}'[Enable verbose output]'
+    '(-d --debug)'{-d,--debug}'[Enable debug output]'
+    '--dry-run[Show what would be done without making changes]'
+    '--version[Show version information]'
+  )
+
+  _arguments -C \
+    $options \
+    '1: :->cmds' \
+    '*:: :->args' && return 0
+
+  case "$state" in
+    cmds)
+      _describe -t commands 'dotfiles commands' commands
+      ;;
+    args)
+      case $words[1] in
+        add)
+          _arguments \
+            '1:file:_files' \
+            '2:target directory:_directories' \
+            '3:local:(true false)'
+          ;;
+        apply)
+          _arguments '1:file:_files'
+          ;;
+        *)
+          _files
+          ;;
+      esac
+      ;;
+  esac
+} 

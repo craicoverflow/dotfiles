@@ -1,3 +1,0 @@
-#!/usr/bin/env bash
-
-code --list-extensions > $DOTFILES_ROOT/vscode/extensions

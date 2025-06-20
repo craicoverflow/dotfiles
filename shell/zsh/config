@@ -26,3 +26,5 @@ export KUBECONFIG=~/.kube/config
 
 # env vars
 export DOCKER_HUB_REPO=docker.io
+
+source ~/.aws/env
