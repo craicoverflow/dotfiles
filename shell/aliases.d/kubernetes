@@ -1348,7 +1348,8 @@ function kcfg() {
       >&2 echo "Splitting Kubeconfigs into separate files..."
       mkdir -p "${KFG_DIR}"
       for ctx in $(\kubectl --kubeconfig="${KFG}" config get-contexts -o name); do
-        \kubectl --kubeconfig="${KFG}" config view --minify --flatten --raw --context=${ctx} > "${KFG_DIR}/${ctx}"
+        modified_ctx=$(echo "${ctx}" | sed -E 's|arn:aws:eks:([^:]+):([^:]+)(:cluster/([^:]+))?|\1-\2-\4|;')
+        \kubectl --kubeconfig="${KFG}" config view --minify --flatten --raw --context=${ctx} > "${KFG_DIR}/${modified_ctx}"
       done
       chmod 600 "${KFG_DIR}"/*
       rename -f 's/:/./g' "${KFG_DIR}"/*

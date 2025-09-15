@@ -4,6 +4,7 @@ brew:
     homeport/tap: true
   packages:
     hugo: true
+    docker-credential-helper: true
     jq: true
     colima: false
     wget: true

@@ -97,10 +97,10 @@ case "$CMD" in
     "${cmd_dir}/add.sh" "$@"
     ;;
   "edit")
-    if [ -z "${EDITOR:-}" ]; then
-      fail "\$EDITOR environment variable not set"
+    if [ -z "${DOTFILES_EDITOR:-}" ]; then
+      DOTFILES_EDITOR="$EDITOR"
     fi
-    cd "${DOTFILES_ROOT}" && "${EDITOR}" .
+    cd "${DOTFILES_ROOT}" && "${DOTFILES_EDITOR}" .
     ;;
   "diff")
     "${cmd_dir}/diff.sh" "$@"

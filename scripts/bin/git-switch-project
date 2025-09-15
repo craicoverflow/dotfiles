@@ -1,0 +1,128 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+# Default search path
+SEARCH_PATH="$HOME/code"
+
+# Parse arguments
+REMOTE_FLAG=""
+PROJECT_FILTER=""
+
+while [[ $# -gt 0 ]]; do
+  case $1 in
+    -r)
+      REMOTE_FLAG="-r"
+      shift
+      ;;
+    *)
+      PROJECT_FILTER="$1"
+      shift
+      ;;
+  esac
+done
+
+# Find all Git repositories under ~/code
+find_projects() {
+  # Find all .git directories first, then get their parent directories
+  find "$SEARCH_PATH" -type d -name ".git" -prune -exec dirname {} \;
+}
+
+# Get the editor command
+get_editor_cmd() {
+  if [[ -n "${CODE_EDITOR:-}" ]]; then
+    echo "$CODE_EDITOR"
+  else
+    echo "${EDITOR:-vim}"
+  fi
+}
+
+# Main logic
+projects=$(find_projects)
+
+# Function to clean paths for display
+clean_path() {
+  sed "s|^$SEARCH_PATH/||"
+}
+
+if [[ -n "$PROJECT_FILTER" ]]; then
+  # Filter projects based on input argument
+  filtered_projects=$(echo "$projects" | grep -i "$PROJECT_FILTER" || true)
+  
+  # Count matching projects
+  match_count=$(echo "$filtered_projects" | grep -v "^$" | wc -l)
+  
+  if [[ $match_count -eq 0 ]]; then
+    echo "No Git projects found matching: $PROJECT_FILTER"
+    exit 1
+  elif [[ $match_count -eq 1 ]]; then
+    selected_project="$filtered_projects"
+  else
+    # Multiple matches, use fzf with initial query
+    # Create arrays for clean and full paths
+    mapfile -t full_paths_array < <(echo "$filtered_projects")
+    mapfile -t clean_paths_array < <(echo "$filtered_projects" | clean_path)
+    
+    # Show clean paths in fzf but track the selection
+    selected_clean_path=$(printf '%s\n' "${clean_paths_array[@]}" | fzf --query="$PROJECT_FILTER")
+    
+    if [[ -n "$selected_clean_path" ]]; then
+      # Find the index of the selected clean path and get the corresponding full path
+      for i in "${!clean_paths_array[@]}"; do
+        if [[ "${clean_paths_array[$i]}" == "$selected_clean_path" ]]; then
+          selected_project="${full_paths_array[$i]}"
+          break
+        fi
+      done
+      
+      # Fallback if not found in array (shouldn't happen but safety check)
+      if [[ -z "$selected_project" ]]; then
+        selected_project="$SEARCH_PATH/$selected_clean_path"
+      fi
+    else
+      selected_project=""
+    fi
+  fi
+else
+  # No filter provided, show all projects in fzf
+  # Create arrays for clean and full paths
+  mapfile -t full_paths_array < <(echo "$projects")
+  mapfile -t clean_paths_array < <(echo "$projects" | clean_path)
+  
+  # Show clean paths in fzf but track the selection
+  selected_clean_path=$(printf '%s\n' "${clean_paths_array[@]}" | fzf)
+  
+  if [[ -n "$selected_clean_path" ]]; then
+    # Find the index of the selected clean path and get the corresponding full path
+    for i in "${!clean_paths_array[@]}"; do
+      if [[ "${clean_paths_array[$i]}" == "$selected_clean_path" ]]; then
+        selected_project="${full_paths_array[$i]}"
+        break
+      fi
+    done
+    
+    # Fallback if not found in array (shouldn't happen but safety check)
+    if [[ -z "$selected_project" ]]; then
+      selected_project="$SEARCH_PATH/$selected_clean_path"
+    fi
+  else
+    selected_project=""
+  fi
+fi
+
+# Exit if no project was selected (user pressed ESC in fzf)
+[[ -z "$selected_project" ]] && exit 0
+
+# Change to the selected directory
+cd "$selected_project"
+
+# Open in editor if it exists
+editor_cmd=$(get_editor_cmd)
+if [[ -n "$editor_cmd" ]]; then
+  if [[ -n "$REMOTE_FLAG" ]]; then
+    $editor_cmd . "$REMOTE_FLAG"
+  else
+    $editor_cmd .
+  fi
+fi
+

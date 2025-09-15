@@ -1,19 +1,51 @@
+# Basic git aliases
 alias gco='git checkout'
 alias gc='git commit'
-alias grbm="git fetch --prune origin && git rebase origin/main || git rebase origin/master"
+alias grbm="git fetch --prune upstream && git rebase upstream/main || git rebase upstream/master"
 alias gswm="git switch main || git switch master"
 alias gswmf="gswm && grbm"
 alias grbc="git rebase --continue"
 alias gcam="git commit --amend"
 alias gcamne="gcam --no-edit"
-alias gpfwl="git push --force-with-lease"
+alias gpf="git push --force-with-lease"
+alias gpff="git push --force"
 alias grbi="git rebase -i --autostash"
 alias gdelub="git branch --merged | egrep -v \"(^\*|master|main)\" | xargs git branch -d"
 alias glog="git log --graph --pretty=format:'%C(yellow)%h%Creset  %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit -10"
 alias gcb='git switch -c'
 
+# Interactive aliases
 alias gcoi="git-checkout-interactive"
 alias cdgr="cd-git-root"
+
+# New powerful aliases
+alias gst="git status --short"
+alias gss="git-status-interactive"
+alias gai="git-add-interactive"
+alias gci="git-commit-interactive"
+alias gshi="git-stash-interactive"
+alias glogi="git-log-interactive"
+alias gfhi="git-file-history"
+alias gcri="git-conflict-resolver"
+alias gpsu="git-push-set-upstream"
+alias grau="git-remote-add-upstream"
+alias gwip="git-work-in-progress"
+alias gunwip="git-unwip"
+alias gclean="git-clean-interactive"
+alias gtag="git-tag-interactive"
+alias gundo="git-undo-last-commit"
+alias gfixup="git-fixup-interactive"
+
+# Script shortcuts
+alias gwt="git-worktree-manager"
+alias gba="git-branch-analyzer"
+alias grel="git-release-helper"
+alias ginit="git-repo-init"
+alias gsp="git switch-project"
+
+# GitHub CLI
+alias ghprv="gh pr view --web"
+alias ghprc="gh pr create"
 
 # interactively switch branch using fzf
 git-checkout-interactive() {
@@ -33,3 +65,167 @@ git-delete-merged-branches() {
   git checkout $current_branch
 }
 alias gdelmb='git-delete-merged-branches'
+
+# Interactive git status with actions
+git-status-interactive() {
+  local file
+  file=$(git status --porcelain | fzf --preview 'git diff --color=always {2}' --preview-window=right:60% | awk '{print $2}')
+  if [[ -n "$file" ]]; then
+    echo "Selected: $file"
+    echo "Actions: [a]dd, [d]iff, [c]heckout, [r]eset, [e]dit"
+    read -r action
+    case $action in
+      a) git add "$file" ;;
+      d) git diff "$file" ;;
+      c) git checkout "$file" ;;
+      r) git reset HEAD "$file" ;;
+      e) $EDITOR "$file" ;;
+    esac
+  fi
+}
+
+# Interactive file adding with preview
+git-add-interactive() {
+  git diff --name-only | fzf -m --preview 'git diff --color=always {}' --preview-window=right:60% | xargs -r git add
+}
+
+# Interactive commit with template
+git-commit-interactive() {
+  local type
+  type=$(echo -e "feat\nfix\nrefactor\ntest\ndocs\nstyle\nchore" | fzf --prompt="Commit type: ")
+  if [[ -n "$type" ]]; then
+    echo -n "Scope (optional): "
+    read -r scope
+    echo -n "Description: "
+    read -r desc
+    
+    local message="$type"
+    [[ -n "$scope" ]] && message="$message($scope)"
+    message="$message: $desc"
+    
+    git commit -m "$message"
+  fi
+}
+
+# Interactive stash management
+git-stash-interactive() {
+  local action
+  action=$(echo -e "save\nlist\npop\napply\ndrop\nshow" | fzf --prompt="Stash action: ")
+  
+  case $action in
+    save)
+      echo -n "Stash message: "
+      read -r message
+      git stash save "$message"
+      ;;
+    list)
+      git stash list
+      ;;
+    pop|apply|drop|show)
+      local stash
+      stash=$(git stash list | fzf | cut -d: -f1)
+      [[ -n "$stash" ]] && git stash "$action" "$stash"
+      ;;
+  esac
+}
+
+# Interactive log viewer
+git-log-interactive() {
+  git log --oneline --color=always | fzf --ansi --preview 'git show --color=always {1}' --preview-window=right:60%
+}
+
+# View file history interactively
+git-file-history() {
+  local file
+  file=$(find . -type f -not -path './.git/*' | fzf --prompt="Select file: ")
+  if [[ -n "$file" ]]; then
+    git log --oneline --color=always -- "$file" | fzf --ansi --preview "git show --color=always {1} -- $file" --preview-window=right:60%
+  fi
+}
+
+# Quick conflict resolver
+git-conflict-resolver() {
+  local conflicts
+  conflicts=$(git diff --name-only --diff-filter=U)
+  if [[ -z "$conflicts" ]]; then
+    echo "No conflicts found"
+    return
+  fi
+  
+  echo "$conflicts" | fzf -m --prompt="Select conflicts to resolve: " | while read -r file; do
+    echo "Opening $file for conflict resolution..."
+    $EDITOR "$file"
+    echo "Mark as resolved? [y/N]"
+    read -r confirm
+    [[ "$confirm" == "y" ]] && git add "$file"
+  done
+}
+
+# Push and set upstream
+git-push-set-upstream() {
+  local branch
+  branch=$(git branch --show-current)
+  git push -u origin "$branch"
+}
+
+# Add upstream remote
+git-remote-add-upstream() {
+  echo -n "Upstream URL: "
+  read -r upstream_url
+  git remote add upstream "$upstream_url"
+  git fetch upstream
+}
+
+# Work in progress - quick save
+git-work-in-progress() {
+  git add -A
+  git commit -m "WIP: work in progress [ci skip]"
+}
+
+# Undo work in progress
+git-unwip() {
+  local last_commit
+  last_commit=$(git log -1 --pretty=%B)
+  if [[ "$last_commit" =~ ^WIP: ]]; then
+    git reset HEAD~1
+  else
+    echo "Last commit is not a WIP commit"
+  fi
+}
+
+# Interactive clean
+git-clean-interactive() {
+  git clean -i
+}
+
+# Interactive tagging
+git-tag-interactive() {
+  echo -n "Tag name: "
+  read -r tag_name
+  echo -n "Tag message: "
+  read -r tag_message
+  git tag -a "$tag_name" -m "$tag_message"
+  echo "Push tag to origin? [y/N]"
+  read -r confirm
+  [[ "$confirm" == "y" ]] && git push origin "$tag_name"
+}
+
+# Undo last commit (keep changes)
+git-undo-last-commit() {
+  echo "This will undo the last commit but keep your changes."
+  echo "Continue? [y/N]"
+  read -r confirm
+  [[ "$confirm" == "y" ]] && git reset --soft HEAD~1
+}
+
+# Interactive fixup
+git-fixup-interactive() {
+  local commit
+  commit=$(git log --oneline | fzf --prompt="Select commit to fixup: " | cut -d' ' -f1)
+  if [[ -n "$commit" ]]; then
+    git commit --fixup="$commit"
+    echo "Run interactive rebase to apply fixup? [y/N]"
+    read -r confirm
+    [[ "$confirm" == "y" ]] && git rebase -i --autosquash "$commit"~1
+  fi
+}

@@ -7,7 +7,7 @@ alias yo='clipcopy'
 alias kns="kubens"
 alias kcctx='kctx -c'
 alias kvs="kubectl view-secret"
-alias kms="kubectl modify-secret"
+alias kms="EDITOR=vim kubectl modify-secret"
 alias kshell="kubectl-remote_shell"
 alias grep=egrep
 alias gr=egrep
@@ -15,6 +15,7 @@ alias grop="gron|grep"
 alias reload="source ~/.zshrc"
 alias rl="reload"
 alias edit-nvim-config="cd ~/.config/nvim && nvim ."
+alias sgp="switch-git-project"
 
 # delete all contexts that match the string
 function kxgd() {
@@ -35,4 +36,19 @@ function ls-hashdirs() {
 
 function cd-subproject() {
   cd "${1:-.}/$(find . -maxdepth 5 -type d -name .git | sed 's|/.git$||' | fzf --preview 'tree -L 2 ./{}')"
+}
+
+# Obsidian daily notes shortcuts
+alias dn="daily-note"
+alias note="daily-note"
+alias daily-create="daily-note create"
+alias daily-edit="daily-note edit"
+alias daily-view="daily-note view"
+alias daily-open="daily-note open"
+alias daily-add="daily-note add"
+alias standup="daily-note view --standup"
+
+# Unset environment variables with pattern matching
+function unsetv() {
+    eval "$(unset-vars "$@")"
 }

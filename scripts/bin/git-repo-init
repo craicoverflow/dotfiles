@@ -1,0 +1,435 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+# Git Repository Initializer - Quick setup with best practices
+# Usage: git-repo-init [repo-name] [--remote <url>]
+
+REPO_NAME=""
+REMOTE_URL=""
+TEMPLATE_TYPE=""
+
+show_help() {
+    cat << EOF
+Git Repository Initializer - Quick setup with best practices
+
+USAGE:
+    git-repo-init [repo-name] [options]
+
+OPTIONS:
+    --remote <url>      Add remote origin URL
+    --template <type>   Use template (node, python, go, react, etc.)
+    -h, --help         Show this help
+
+EXAMPLES:
+    git-repo-init my-project
+    git-repo-init my-app --remote git@github.com:user/my-app.git
+    git-repo-init web-app --template react
+EOF
+}
+
+create_gitignore() {
+    local template="$1"
+    
+    case "$template" in
+        "node"|"js"|"javascript"|"npm")
+            cat > .gitignore << 'EOF'
+# Dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage directory used by tools like istanbul
+coverage/
+*.lcov
+
+# nyc test coverage
+.nyc_output
+
+# Grunt intermediate storage
+.grunt
+
+# Bower dependency directory
+bower_components
+
+# node-waf configuration
+.lock-wscript
+
+# Compiled binary addons
+build/Release
+
+# Dependency directories
+jspm_packages/
+
+# TypeScript cache
+*.tsbuildinfo
+
+# Optional npm cache directory
+.npm
+
+# Optional eslint cache
+.eslintcache
+
+# Optional REPL history
+.node_repl_history
+
+# Output of 'npm pack'
+*.tgz
+
+# Yarn Integrity file
+.yarn-integrity
+
+# dotenv environment variables file
+.env
+.env.test
+
+# parcel-bundler cache
+.cache
+.parcel-cache
+
+# Next.js build output
+.next
+
+# Nuxt.js build / generate output
+.nuxt
+dist
+
+# Gatsby files
+.cache/
+public
+
+# Storybook build outputs
+.out
+.storybook-out
+
+# Temporary folders
+tmp/
+temp/
+EOF
+            ;;
+        "python"|"py")
+            cat > .gitignore << 'EOF'
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# PyInstaller
+*.manifest
+*.spec
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+.pytest_cache/
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+EOF
+            ;;
+        "go")
+            cat > .gitignore << 'EOF'
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test binary, built with `go test -c`
+*.test
+
+# Output of the go coverage tool, specifically when used with LiteIDE
+*.out
+
+# Dependency directories (remove the comment below to include it)
+vendor/
+
+# Go workspace file
+go.work
+EOF
+            ;;
+        "react")
+            cat > .gitignore << 'EOF'
+# Dependencies
+node_modules/
+/.pnp
+.pnp.js
+
+# Testing
+/coverage
+
+# Production
+/build
+
+# misc
+.DS_Store
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+EOF
+            ;;
+        *)
+            cat > .gitignore << 'EOF'
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Logs
+*.log
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Dependencies
+node_modules/
+vendor/
+
+# Build outputs
+build/
+dist/
+*.o
+*.a
+EOF
+            ;;
+    esac
+}
+
+create_readme() {
+    local repo_name="$1"
+    
+    cat > README.md << EOF
+# $repo_name
+
+Brief description of your project.
+
+## Installation
+
+\`\`\`bash
+# Installation instructions
+\`\`\`
+
+## Usage
+
+\`\`\`bash
+# Usage examples
+\`\`\`
+
+## Contributing
+
+1. Fork the repository
+2. Create your feature branch (\`git checkout -b feature/amazing-feature\`)
+3. Commit your changes (\`git commit -m 'Add some amazing feature'\`)
+4. Push to the branch (\`git push origin feature/amazing-feature\`)
+5. Open a Pull Request
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+EOF
+}
+
+create_license() {
+    cat > LICENSE << 'EOF'
+MIT License
+
+Copyright (c) 2024
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+EOF
+}
+
+init_repo() {
+    local repo_name="$1"
+    local remote_url="$2"
+    local template="$3"
+    
+    if [[ -n "$repo_name" ]] && [[ ! -d "$repo_name" ]]; then
+        mkdir "$repo_name"
+        cd "$repo_name"
+    fi
+    
+    # Initialize git repository
+    git init
+    
+    # Create .gitignore
+    if [[ -n "$template" ]]; then
+        echo "Creating .gitignore for $template..."
+        create_gitignore "$template"
+    else
+        echo "Available templates: node, python, go, react, generic"
+        echo -n "Select template (or press Enter for generic): "
+        read -r selected_template
+        create_gitignore "$selected_template"
+    fi
+    
+    # Create README.md
+    echo "Creating README.md..."
+    create_readme "${repo_name:-$(basename "$(pwd)")}"
+    
+    # Create LICENSE
+    echo "Creating MIT LICENSE..."
+    create_license
+    
+    # Add remote if provided
+    if [[ -n "$remote_url" ]]; then
+        echo "Adding remote origin: $remote_url"
+        git remote add origin "$remote_url"
+    fi
+    
+    # Initial commit
+    git add .
+    git commit -m "Initial commit
+
+- Add .gitignore
+- Add README.md
+- Add MIT License"
+    
+    # Set up main branch
+    git branch -M main
+    
+    echo
+    echo "Repository initialized successfully!"
+    echo "Repository: $(pwd)"
+    [[ -n "$remote_url" ]] && echo "Remote: $remote_url"
+    echo
+    echo "Next steps:"
+    echo "1. Edit README.md with your project details"
+    echo "2. Start coding!"
+    if [[ -n "$remote_url" ]]; then
+        echo "3. Push to remote: git push -u origin main"
+    else
+        echo "3. Add remote: git remote add origin <url>"
+        echo "4. Push to remote: git push -u origin main"
+    fi
+}
+
+parse_args() {
+    while [[ $# -gt 0 ]]; do
+        case $1 in
+            --remote)
+                REMOTE_URL="$2"
+                shift 2
+                ;;
+            --template)
+                TEMPLATE_TYPE="$2"
+                shift 2
+                ;;
+            -h|--help)
+                show_help
+                exit 0
+                ;;
+            -*)
+                echo "Unknown option $1"
+                show_help
+                exit 1
+                ;;
+            *)
+                REPO_NAME="$1"
+                shift
+                ;;
+        esac
+    done
+}
+
+main() {
+    parse_args "$@"
+    
+    if [[ -z "$REPO_NAME" ]]; then
+        echo -n "Repository name: "
+        read -r REPO_NAME
+    fi
+    
+    if [[ -z "$REPO_NAME" ]]; then
+        echo "Repository name is required"
+        exit 1
+    fi
+    
+    init_repo "$REPO_NAME" "$REMOTE_URL" "$TEMPLATE_TYPE"
+}
+
+main "$@" 

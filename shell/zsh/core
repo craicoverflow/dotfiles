@@ -43,7 +43,7 @@ bindkey "^R" fzf-history-widget
 
 PROMPT='$(kube_ps1)'$PROMPT
 
-export KUBECONFIG=~/.kube/config
+export KUBECONFIG=~/.kube/config.d/kind-localdev
 source $ZSH/oh-my-zsh.sh
 
 # env vars

@@ -1,0 +1,198 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+# Git Branch Analyzer - Analyze and clean up branches
+# Usage: git-branch-analyzer [action]
+
+show_help() {
+    cat << EOF
+Git Branch Analyzer - Analyze and clean up branches
+
+USAGE:
+    git-branch-analyzer [action]
+
+ACTIONS:
+    analyze     Show branch analysis (age, commits, merge status)
+    clean       Interactive branch cleanup
+    stale       List stale branches (older than 30 days)
+    unmerged    List unmerged branches
+    gone        Remove branches whose remote tracking branch is gone
+
+EXAMPLES:
+    git-branch-analyzer analyze
+    git-branch-analyzer clean
+    git-branch-analyzer gone
+EOF
+}
+
+analyze_branches() {
+    echo "Branch Analysis:"
+    echo "================"
+    echo
+    
+    local current_branch
+    current_branch=$(git branch --show-current)
+    
+    git for-each-ref --format='%(refname:short)|%(committerdate:relative)|%(authorname)|%(upstream:track)' refs/heads/ | \
+    while IFS='|' read -r branch date author track; do
+        local merged_status=""
+        if git merge-base --is-ancestor "$branch" HEAD 2>/dev/null; then
+            merged_status="✓ merged"
+        else
+            merged_status="✗ unmerged"
+        fi
+        
+        local current_marker=""
+        [[ "$branch" == "$current_branch" ]] && current_marker="* "
+        
+        printf "%s%-20s | %-15s | %-20s | %-10s | %s\n" \
+            "$current_marker" "$branch" "$date" "$author" "$merged_status" "$track"
+    done | sort -k2
+}
+
+find_stale_branches() {
+    echo "Stale branches (older than 30 days):"
+    echo "===================================="
+    
+    git for-each-ref --format='%(refname:short) %(committerdate)' refs/heads/ | \
+    while read -r branch date; do
+        local days_old
+        days_old=$(( ($(date +%s) - $(date -d "$date" +%s)) / 86400 ))
+        if [[ $days_old -gt 30 ]] && [[ "$branch" != "main" ]] && [[ "$branch" != "master" ]]; then
+            echo "$branch ($days_old days old)"
+        fi
+    done
+}
+
+find_unmerged_branches() {
+    echo "Unmerged branches:"
+    echo "=================="
+    
+    local main_branch
+    main_branch=$(git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed 's@^refs/remotes/origin/@@' || echo "main")
+    
+    git branch --no-merged "$main_branch" | grep -v "^\*" | sed 's/^  //'
+}
+
+clean_gone_branches() {
+    echo "Cleaning branches whose remote tracking branch is gone..."
+    
+    local gone_branches
+    gone_branches=$(git for-each-ref --format='%(refname:short) %(upstream:track)' refs/heads/ | \
+                   awk '$2=="[gone]" {print $1}')
+    
+    if [[ -z "$gone_branches" ]]; then
+        echo "No gone branches found"
+        return
+    fi
+    
+    echo "Gone branches:"
+    echo "$gone_branches"
+    echo
+    echo "Delete these branches? [y/N]"
+    read -r confirm
+    
+    if [[ "$confirm" == "y" ]]; then
+        echo "$gone_branches" | xargs -r git branch -D
+        echo "Gone branches deleted"
+    fi
+}
+
+interactive_cleanup() {
+    echo "Interactive Branch Cleanup"
+    echo "========================="
+    
+    local action
+    action=$(echo -e "Delete merged branches\nDelete stale branches\nDelete gone branches\nDelete specific branch" | \
+             fzf --prompt="Cleanup action: ")
+    
+    case "$action" in
+        "Delete merged branches")
+            local merged_branches
+            merged_branches=$(git branch --merged | grep -v "^\*\|main\|master" | sed 's/^  //')
+            if [[ -n "$merged_branches" ]]; then
+                echo "Merged branches:"
+                echo "$merged_branches"
+                echo
+                echo "Delete these branches? [y/N]"
+                read -r confirm
+                [[ "$confirm" == "y" ]] && echo "$merged_branches" | xargs -r git branch -d
+            else
+                echo "No merged branches to delete"
+            fi
+            ;;
+        "Delete stale branches")
+            local stale_branches
+            stale_branches=$(git for-each-ref --format='%(refname:short) %(committerdate)' refs/heads/ | \
+                           while read -r branch date; do
+                               local days_old
+                               days_old=$(( ($(date +%s) - $(date -d "$date" +%s)) / 86400 ))
+                               if [[ $days_old -gt 30 ]] && [[ "$branch" != "main" ]] && [[ "$branch" != "master" ]]; then
+                                   echo "$branch"
+                               fi
+                           done)
+            
+            if [[ -n "$stale_branches" ]]; then
+                echo "Stale branches (>30 days):"
+                echo "$stale_branches"
+                echo
+                echo "Delete these branches? [y/N]"
+                read -r confirm
+                [[ "$confirm" == "y" ]] && echo "$stale_branches" | xargs -r git branch -D
+            else
+                echo "No stale branches to delete"
+            fi
+            ;;
+        "Delete gone branches")
+            clean_gone_branches
+            ;;
+        "Delete specific branch")
+            local branch
+            branch=$(git branch | grep -v "^\*" | sed 's/^  //' | fzf --prompt="Select branch to delete: ")
+            if [[ -n "$branch" ]]; then
+                echo "Delete branch '$branch'? [y/N]"
+                read -r confirm
+                [[ "$confirm" == "y" ]] && git branch -D "$branch"
+            fi
+            ;;
+    esac
+}
+
+main() {
+    local action="${1:-}"
+    
+    if [[ ! -d .git ]] && [[ ! -f .git ]]; then
+        echo "Error: Not in a git repository"
+        exit 1
+    fi
+    
+    case "$action" in
+        ""|"help"|"-h"|"--help")
+            show_help
+            exit 0
+            ;;
+        "analyze")
+            analyze_branches
+            ;;
+        "clean")
+            interactive_cleanup
+            ;;
+        "stale")
+            find_stale_branches
+            ;;
+        "unmerged")
+            find_unmerged_branches
+            ;;
+        "gone")
+            clean_gone_branches
+            ;;
+        *)
+            echo "Unknown action: $action"
+            show_help
+            exit 1
+            ;;
+    esac
+}
+
+main "$@" 

@@ -1,0 +1,165 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+# Git Worktree Manager - Interactive worktree management with fzf
+# Usage: git-worktree-manager [action]
+
+WORKTREE_DIR="${WORKTREE_DIR:-$HOME/worktrees}"
+
+show_help() {
+    cat << EOF
+Git Worktree Manager - Interactive worktree management
+
+USAGE:
+    git-worktree-manager [action]
+
+ACTIONS:
+    list        List all worktrees
+    add         Add a new worktree
+    remove      Remove a worktree
+    switch      Switch to a worktree directory
+    prune       Remove stale worktree administrative files
+
+ENVIRONMENT:
+    WORKTREE_DIR    Base directory for worktrees (default: ~/worktrees)
+
+EXAMPLES:
+    git-worktree-manager add
+    git-worktree-manager switch
+    git-worktree-manager remove
+EOF
+}
+
+list_worktrees() {
+    echo "Current worktrees:"
+    git worktree list
+}
+
+add_worktree() {
+    echo "Available branches:"
+    local branches
+    branches=$(git branch -a --format='%(refname:short)' | grep -v HEAD | sort -u)
+    
+    local branch
+    branch=$(echo "$branches" | fzf --prompt="Select branch for new worktree: ")
+    
+    if [[ -z "$branch" ]]; then
+        echo "No branch selected"
+        return 1
+    fi
+    
+    # Remove origin/ prefix if present
+    local clean_branch
+    clean_branch="${branch#origin/}"
+    
+    local worktree_path
+    worktree_path="$WORKTREE_DIR/$(basename "$(git rev-parse --show-toplevel)")_$clean_branch"
+    
+    echo "Creating worktree at: $worktree_path"
+    mkdir -p "$WORKTREE_DIR"
+    
+    if git show-ref --verify --quiet "refs/heads/$clean_branch"; then
+        git worktree add "$worktree_path" "$clean_branch"
+    else
+        git worktree add "$worktree_path" -b "$clean_branch" "$branch"
+    fi
+    
+    echo "Worktree created at: $worktree_path"
+    echo "Change to directory? [y/N]"
+    read -r confirm
+    if [[ "$confirm" == "y" ]]; then
+        cd "$worktree_path"
+        exec "$SHELL"
+    fi
+}
+
+remove_worktree() {
+    local worktrees
+    worktrees=$(git worktree list --porcelain | grep "^worktree " | sed 's/^worktree //')
+    
+    if [[ -z "$worktrees" ]]; then
+        echo "No worktrees to remove"
+        return
+    fi
+    
+    local worktree
+    worktree=$(echo "$worktrees" | fzf --prompt="Select worktree to remove: ")
+    
+    if [[ -z "$worktree" ]]; then
+        echo "No worktree selected"
+        return 1
+    fi
+    
+    echo "Remove worktree: $worktree? [y/N]"
+    read -r confirm
+    if [[ "$confirm" == "y" ]]; then
+        git worktree remove "$worktree"
+        echo "Worktree removed: $worktree"
+    fi
+}
+
+switch_worktree() {
+    local worktrees
+    worktrees=$(git worktree list --porcelain | grep "^worktree " | sed 's/^worktree //')
+    
+    if [[ -z "$worktrees" ]]; then
+        echo "No worktrees available"
+        return
+    fi
+    
+    local worktree
+    worktree=$(echo "$worktrees" | fzf --prompt="Select worktree to switch to: ")
+    
+    if [[ -z "$worktree" ]]; then
+        echo "No worktree selected"
+        return 1
+    fi
+    
+    echo "Switching to: $worktree"
+    cd "$worktree"
+    exec "$SHELL"
+}
+
+prune_worktrees() {
+    echo "Pruning stale worktree administrative files..."
+    git worktree prune -v
+}
+
+main() {
+    local action="${1:-}"
+    
+    if [[ ! -d .git ]] && [[ ! -f .git ]]; then
+        echo "Error: Not in a git repository"
+        exit 1
+    fi
+    
+    case "$action" in
+        ""|"help"|"-h"|"--help")
+            show_help
+            exit 0
+            ;;
+        "list")
+            list_worktrees
+            ;;
+        "add")
+            add_worktree
+            ;;
+        "remove")
+            remove_worktree
+            ;;
+        "switch")
+            switch_worktree
+            ;;
+        "prune")
+            prune_worktrees
+            ;;
+        *)
+            echo "Unknown action: $action"
+            show_help
+            exit 1
+            ;;
+    esac
+}
+
+main "$@" 

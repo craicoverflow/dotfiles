@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+
+# Check if an argument was provided
+if [ $# -eq 0 ]; then
+    echo "Usage: unset-vars PATTERN" >&2
+    echo "Example: unset-vars \"AWS_*\"" >&2
+    exit 1
+fi
+
+pattern=$1
+
+# Find matching environment variables
+matching_vars=()
+while IFS='=' read -r name value; do
+    if [[ $name == $pattern ]]; then
+        matching_vars+=("$name")
+    fi
+done < <(env)
+
+# Check if any variables were found
+if [ ${#matching_vars[@]} -eq 0 ]; then
+    echo "No environment variables matching pattern '$pattern' were found." >&2
+    exit 0
+fi
+
+# Show matching variables
+echo "The following environment variables will be unset:" >&2
+printf '%s\n' "${matching_vars[@]}" >&2
+
+# Ask for confirmation
+read -p "Do you want to proceed? [y/N] " -n 1 -r
+echo
+if [[ $REPLY =~ ^[Yy]$ ]]; then
+    # Output unset commands for evaluation
+    for var in "${matching_vars[@]}"; do
+        echo "unset $var;"
+    done
+else
+    echo "Operation cancelled." >&2
+    exit 1
+fi

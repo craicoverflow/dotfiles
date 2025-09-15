@@ -1,0 +1,318 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# kubectl-all plugin
+# List every namespaced resource (built-ins + CRDs) in a namespace.
+# Optionally filter by API group.
+#
+# Usage:
+#   kubectl all [OPTIONS] [-- KUBECTL_ARGS]
+#   kubectl all -h|--help
+#   kubectl all -n my-namespace
+#   kubectl all --api-group services.k8s.aws
+#   kubectl all -n prod --api-group services.k8s.aws -- -l app=foo
+#
+# Options:
+#   -n, --namespace NAMESPACE  Target namespace (default: current context namespace or 'default')
+#   --api-group GROUP         Filter resources by API group
+#   -o, --output FORMAT       Output format: yaml|json|table (default: yaml)
+#   -v, --verbose             Show verbose output including progress
+#   -h, --help               Show this help message
+#   --                       Pass remaining arguments to kubectl get commands
+
+# Default values
+NS=""
+API_GROUP=""
+OUTPUT_FORMAT="table"
+VERBOSE=false
+EXTRA_ARGS=()
+
+# Colors for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m' # No Color
+
+show_help() {
+  cat << 'EOF'
+kubectl-all - List all namespaced resources in a Kubernetes namespace
+
+USAGE:
+    kubectl all [OPTIONS] [-- KUBECTL_ARGS]
+
+OPTIONS:
+    -n, --namespace NAMESPACE  Target namespace (default: current context namespace or 'default')
+    --api-group GROUP         Filter resources by API group
+    -o, --output FORMAT       Output format: yaml|json|table (default: yaml)
+    -v, --verbose             Show verbose output including progress
+    -h, --help               Show this help message
+    --                       Pass remaining arguments to kubectl get commands
+
+EXAMPLES:
+    kubectl all                                    # List all resources in current namespace
+    kubectl all -n kube-system                     # List all resources in kube-system
+    kubectl all --api-group apps                   # List only apps API group resources
+    kubectl all -n prod --api-group apps -- -l app=web  # Filter by label
+    kubectl all -o json                           # Output in JSON format
+    kubectl all -v                                # Show verbose progress
+
+ENVIRONMENT VARIABLES:
+    GETALL_JOBS    Number of parallel jobs (default: 4)
+
+EOF
+}
+
+log_info() {
+  if [[ "$VERBOSE" == "true" ]]; then
+    echo -e "${BLUE}[INFO]${NC} $*" >&2
+  fi
+}
+
+log_warn() {
+  echo -e "${YELLOW}[WARN]${NC} $*" >&2
+}
+
+log_error() {
+  echo -e "${RED}[ERROR]${NC} $*" >&2
+}
+
+# Parse command line arguments
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    -h|--help)
+      show_help
+      exit 0
+      ;;
+    -n|--namespace)
+      if [[ -z "${2-}" ]]; then
+        log_error "Namespace argument required for $1"
+        exit 1
+      fi
+      NS="$2"
+      shift 2
+      ;;
+    --api-group)
+      if [[ -z "${2-}" ]]; then
+        log_error "API group argument required for $1"
+        exit 1
+      fi
+      API_GROUP="$2"
+      shift 2
+      ;;
+    -o|--output)
+      if [[ -z "${2-}" ]]; then
+        log_error "Output format argument required for $1"
+        exit 1
+      fi
+      case "$2" in
+        yaml|json|table)
+          OUTPUT_FORMAT="$2"
+          ;;
+        *)
+          log_error "Invalid output format: $2. Must be yaml, json, or table"
+          exit 1
+          ;;
+      esac
+      shift 2
+      ;;
+    -v|--verbose)
+      VERBOSE=true
+      shift
+      ;;
+    --)
+      shift
+      EXTRA_ARGS=("$@")
+      break
+      ;;
+    -*)
+      log_error "Unknown option: $1"
+      echo "Use --help for usage information."
+      exit 1
+      ;;
+    *)
+      log_error "Unexpected argument: $1"
+      echo "Use --help for usage information."
+      exit 1
+      ;;
+  esac
+done
+
+# Check if kubectl is available and cluster is accessible
+if ! command -v kubectl >/dev/null 2>&1; then
+  log_error "kubectl is not installed or not in PATH"
+  exit 1
+fi
+
+# Test basic connectivity
+if ! kubectl cluster-info >/dev/null 2>&1; then
+  log_error "Cannot connect to Kubernetes cluster. Check your kubeconfig and cluster connectivity."
+  exit 1
+fi
+
+# Determine namespace if not given
+if [[ -z "${NS}" ]]; then
+  log_info "No namespace specified, detecting from current context..."
+  NS="$(kubectl config view --minify -o jsonpath='{..namespace}' 2>/dev/null || true)"
+  if [[ -z "${NS}" ]]; then
+    NS="default"
+    log_info "Using default namespace"
+  else
+    log_info "Using namespace from current context: ${NS}"
+  fi
+else
+  log_info "Using specified namespace: ${NS}"
+fi
+
+# Validate namespace exists
+if ! kubectl get namespace "${NS}" >/dev/null 2>&1; then
+  log_error "Namespace '${NS}' does not exist or you don't have access to it"
+  log_info "Available namespaces:"
+  kubectl get namespaces -o name 2>/dev/null | sed 's/namespace\//  /' || echo "  (unable to list namespaces)"
+  exit 1
+fi
+
+# Build the resource list; use apiGroup filter if provided
+log_info "Discovering available resource types..."
+
+if [[ -n "${API_GROUP}" ]]; then
+  log_info "Filtering by API group: ${API_GROUP}"
+  
+  # Check if the API group exists
+  if ! kubectl api-resources --verbs=list --namespaced -o wide 2>/dev/null | grep -q "[[:space:]]${API_GROUP}$"; then
+    log_error "API group '${API_GROUP}' not found or has no listable namespaced resources"
+    log_info "Available API groups with namespaced resources:"
+    kubectl api-resources --verbs=list --namespaced -o wide 2>/dev/null | awk 'NR>1 {print $NF}' | sort -u | sed 's/^/  /' || echo "  (unable to list API groups)"
+    exit 1
+  fi
+  
+  mapfile -t KINDS < <(
+    kubectl api-resources --verbs=list --namespaced -o wide 2>/dev/null \
+    | awk -v grp="${API_GROUP}" 'NR>1 && $NF == grp {print $1}' \
+    | sort -u
+  )
+else
+  mapfile -t KINDS < <(
+    kubectl api-resources --verbs=list --namespaced -o name 2>/dev/null \
+    | sort -u
+  )
+fi
+
+if [[ ${#KINDS[@]} -eq 0 ]]; then
+  log_error "No namespaced resources found for api-group='${API_GROUP:-*}'"
+  exit 1
+fi
+
+log_info "Found ${#KINDS[@]} resource types to query"
+
+JOBS="${GETALL_JOBS:-4}"
+
+# Determine output format options
+case "${OUTPUT_FORMAT}" in
+  yaml)
+    FORMAT_ARGS=("-o" "yaml")
+    ;;
+  json)
+    FORMAT_ARGS=("-o" "json")
+    ;;
+  table)
+    FORMAT_ARGS=("-o" "wide")
+    ;;
+esac
+
+_get_kind() {
+  local kind="$1"
+  local ns="$2"
+  local output_format="$3"
+  shift 3
+  local extra_args=("$@")
+  
+  # Build format args array
+  local format_args=()
+  case "${output_format}" in
+    yaml)
+      format_args=("-o" "yaml")
+      ;;
+    json)
+      format_args=("-o" "json")
+      ;;
+    table)
+      format_args=("-o" "wide")
+      ;;
+  esac
+  
+  # Try to get resources with timeout
+  local result
+  if result=$(timeout 30s kubectl get "${kind}" -n "${ns}" \
+    --ignore-not-found \
+    --show-kind \
+    --chunk-size=0 \
+    "${format_args[@]}" \
+    "${extra_args[@]}" 2>/dev/null); then
+    
+    if [[ -n "${result}" ]]; then
+      if [[ "${output_format}" == "table" ]]; then
+        echo "=== ${kind} ==="
+        echo "${result}"
+        echo
+      else
+        echo "${result}"
+      fi
+    fi
+  else
+    # Only show error in verbose mode to avoid cluttering output
+    if [[ "${VERBOSE:-false}" == "true" ]]; then
+      echo "# Warning: Failed to get ${kind} (timeout or error)" >&2
+    fi
+  fi
+}
+
+export -f _get_kind
+export NS OUTPUT_FORMAT VERBOSE
+
+# Progress tracking
+if [[ "$VERBOSE" == "true" ]]; then
+  PROGRESS_FILE=$(mktemp)
+  export PROGRESS_FILE
+  echo "0" > "$PROGRESS_FILE"
+  
+  _progress_wrapper() {
+    _get_kind "$@"
+    local current
+    current=$(<"$PROGRESS_FILE")
+    echo $((current + 1)) > "$PROGRESS_FILE"
+    local total=${#KINDS[@]}
+    echo -e "${GREEN}[PROGRESS]${NC} $((current + 1))/${total} resource types processed" >&2
+  }
+  
+  export -f _progress_wrapper
+  WRAPPER_FUNC="_progress_wrapper"
+else
+  WRAPPER_FUNC="_get_kind"
+fi
+
+# Output header
+if [[ "${OUTPUT_FORMAT}" == "table" ]]; then
+  echo -e "${GREEN}=== Kubernetes Resources in Namespace: ${NS} ===${NC}"
+  [[ -n "${API_GROUP}" ]] && echo -e "${GREEN}=== API Group: ${API_GROUP} ===${NC}"
+  echo
+else
+  cat << EOF
+# kubectl-all output
+# Namespace: ${NS}
+EOF
+  [[ -n "${API_GROUP}" ]] && echo "# API Group: ${API_GROUP}"
+  echo "---"
+fi
+
+# Execute queries in parallel
+log_info "Querying ${#KINDS[@]} resource types with ${JOBS} parallel jobs..."
+
+printf "%s\n" "${KINDS[@]}" \
+  | xargs -n1 -P "${JOBS}" -I{} bash -c "${WRAPPER_FUNC}"' "$1" "$2" "$3" "${@:4}"' _ {} "${NS}" "${OUTPUT_FORMAT}" "${EXTRA_ARGS[@]}"
+
+# Cleanup progress file
+if [[ "$VERBOSE" == "true" && -n "${PROGRESS_FILE:-}" ]]; then
+  rm -f "$PROGRESS_FILE"
+  log_info "Resource query completed"
+fi
