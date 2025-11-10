@@ -1,6 +1,6 @@
 alias cat="bat"
 alias ls="eza"
-alias vim=nvim
+alias vim=vim
 alias cl="clear"
 alias copydir="pwd | clipcopy"
 alias yo='clipcopy'

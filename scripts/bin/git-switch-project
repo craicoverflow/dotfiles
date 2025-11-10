@@ -5,14 +5,23 @@ set -euo pipefail
 # Default search path
 SEARCH_PATH="$HOME/code"
 
+# Cache configuration
+CACHE_DIR="$HOME/.cache"
+CACHE_FILE="$CACHE_DIR/git-switch-project"
+
 # Parse arguments
 REMOTE_FLAG=""
 PROJECT_FILTER=""
+FLUSH_CACHE=false
 
 while [[ $# -gt 0 ]]; do
   case $1 in
     -r)
       REMOTE_FLAG="-r"
+      shift
+      ;;
+    --flush-cache)
+      FLUSH_CACHE=true
       shift
       ;;
     *)
@@ -22,10 +31,36 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-# Find all Git repositories under ~/code
-find_projects() {
+# Create cache directory if it doesn't exist
+ensure_cache_dir() {
+  [[ ! -d "$CACHE_DIR" ]] && mkdir -p "$CACHE_DIR"
+}
+
+# Build project list from filesystem
+build_project_list() {
   # Find all .git directories first, then get their parent directories
   find "$SEARCH_PATH" -type d -name ".git" -prune -exec dirname {} \;
+}
+
+# Get projects from cache or build new list
+find_projects() {
+  ensure_cache_dir
+  
+  # If flush cache flag is set, remove cache file
+  if [[ "$FLUSH_CACHE" == true ]]; then
+    [[ -f "$CACHE_FILE" ]] && rm "$CACHE_FILE"
+    echo "Cache flushed." >&2
+  fi
+  
+  # Check if cache exists and use it, otherwise build and cache
+  if [[ -f "$CACHE_FILE" ]]; then
+    cat "$CACHE_FILE"
+  else
+    echo "Building project cache..." >&2
+    project_list=$(build_project_list)
+    echo "$project_list" > "$CACHE_FILE"
+    echo "$project_list"
+  fi
 }
 
 # Get the editor command

@@ -1,0 +1,226 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+# Git Clone Auto - Clone repos to organized ~/code structure
+# Usage: git-clone-auto <repository-url> [target-directory]
+
+REPO_URL=""
+TARGET_DIR=""
+CODE_ROOT="$HOME/code"
+
+show_help() {
+    cat << EOF
+Git Clone Auto - Clone repos to organized ~/code structure
+
+USAGE:
+    git-clone-auto <repository-url> [target-directory]
+
+DESCRIPTION:
+    Clones a repository into a structured directory under ~/code based on the
+    repository's host, organization, and name.
+
+    For SSH URLs like: git@git.example.com:org/repo.git
+    Clones to: ~/code/git.example.com/org/repo
+
+    For HTTPS URLs like: https://github.com/user/repo.git
+    Clones to: ~/code/github.com/user/repo
+
+OPTIONS:
+    -h, --help         Show this help
+
+EXAMPLES:
+    git-clone-auto git@github.com:user/awesome-project.git
+    # Clones to: ~/code/github.com/user/awesome-project
+
+    git-clone-auto https://github.com/facebook/react.git
+    # Clones to: ~/code/github.com/facebook/react
+
+    git-clone-auto git@git.example.com:org/my-project.git
+    # Clones to: ~/code/git.example.com/org/my-project
+
+    git-clone-auto git@github.com:user/repo.git custom-name
+    # Clones to: ~/code/github.com/user/custom-name
+EOF
+}
+
+parse_repo_url() {
+    local url="$1"
+    local host=""
+    local org=""
+    local repo=""
+    
+    # Handle SSH URLs (git@host:org/repo.git)
+    if [[ "$url" =~ ^git@([^:]+):(.+)$ ]]; then
+        host="${BASH_REMATCH[1]}"
+        local path="${BASH_REMATCH[2]}"
+        
+        # Remove .git suffix if present
+        path="${path%.git}"
+        
+        # Extract org and repo
+        if [[ "$path" =~ ^([^/]+)/(.+)$ ]]; then
+            org="${BASH_REMATCH[1]}"
+            repo="${BASH_REMATCH[2]}"
+        else
+            echo "❌ Error: Could not parse organization and repository from SSH URL: $url" >&2
+            exit 1
+        fi
+    
+    # Handle HTTPS URLs (https://host/org/repo.git)
+    elif [[ "$url" =~ ^https://([^/]+)/(.+)$ ]]; then
+        host="${BASH_REMATCH[1]}"
+        local path="${BASH_REMATCH[2]}"
+        
+        # Remove .git suffix if present
+        path="${path%.git}"
+        
+        # Extract org and repo
+        if [[ "$path" =~ ^([^/]+)/(.+)$ ]]; then
+            org="${BASH_REMATCH[1]}"
+            repo="${BASH_REMATCH[2]}"
+        else
+            echo "❌ Error: Could not parse organization and repository from HTTPS URL: $url" >&2
+            exit 1
+        fi
+    
+    # Handle HTTP URLs (http://host/org/repo.git)
+    elif [[ "$url" =~ ^http://([^/]+)/(.+)$ ]]; then
+        host="${BASH_REMATCH[1]}"
+        local path="${BASH_REMATCH[2]}"
+        
+        # Remove .git suffix if present
+        path="${path%.git}"
+        
+        # Extract org and repo
+        if [[ "$path" =~ ^([^/]+)/(.+)$ ]]; then
+            org="${BASH_REMATCH[1]}"
+            repo="${BASH_REMATCH[2]}"
+        else
+            echo "❌ Error: Could not parse organization and repository from HTTP URL: $url" >&2
+            exit 1
+        fi
+    
+    else
+        echo "❌ Error: Unsupported repository URL format: $url" >&2
+        echo "Supported formats:" >&2
+        echo "  - SSH: git@host:org/repo.git" >&2
+        echo "  - HTTPS: https://host/org/repo.git" >&2
+        echo "  - HTTP: http://host/org/repo.git" >&2
+        exit 1
+    fi
+    
+    echo "$host" "$org" "$repo"
+}
+
+clone_repo() {
+    local repo_url="$1"
+    local target_dir="$2"
+    
+    # Parse the repository URL
+    local parsed
+    parsed=($(parse_repo_url "$repo_url"))
+    local host="${parsed[0]}"
+    local org="${parsed[1]}"
+    local repo="${parsed[2]}"
+    
+    # Use custom target directory name if provided, otherwise use repo name
+    local final_repo_name="${target_dir:-$repo}"
+    
+    # Create the target path
+    local target_path="$CODE_ROOT/$host/$org/$final_repo_name"
+    
+    echo "🔍 Repository URL: $repo_url"
+    echo "📁 Target directory: $target_path"
+    echo
+    
+    # Check if target directory already exists
+    if [[ -d "$target_path" ]]; then
+        echo "❌ Error: Directory already exists: $target_path" >&2
+        echo "💡 Tip: Remove the existing directory or use a different target name" >&2
+        exit 1
+    fi
+    
+    # Create parent directory if it doesn't exist
+    local parent_dir="$CODE_ROOT/$host/$org"
+    if [[ ! -d "$parent_dir" ]]; then
+        echo "📂 Creating directory structure: $parent_dir"
+        mkdir -p "$parent_dir"
+    fi
+    
+    # Clone the repository
+    echo "🚀 Cloning repository..."
+    if git clone "$repo_url" "$target_path"; then
+        echo
+        echo "✅ Successfully cloned repository!"
+        echo "📍 Location: $target_path"
+        echo
+        echo "💡 Next steps:"
+        echo "   cd $target_path"
+        echo "   # Start working on your project!"
+        
+        # Offer to change to the directory
+        echo
+        echo -n "🤔 Change to the cloned directory now? [Y/n]: "
+        read -r response
+        if [[ "$response" =~ ^[Nn]$ ]]; then
+            echo "👋 Happy coding!"
+        else
+            echo "📂 Changing to: $target_path"
+            cd "$target_path"
+            exec "$SHELL"
+        fi
+    else
+        echo "❌ Error: Failed to clone repository" >&2
+        exit 1
+    fi
+}
+
+parse_args() {
+    while [[ $# -gt 0 ]]; do
+        case $1 in
+            -h|--help)
+                show_help
+                exit 0
+                ;;
+            -*)
+                echo "❌ Error: Unknown option $1" >&2
+                show_help
+                exit 1
+                ;;
+            *)
+                if [[ -z "$REPO_URL" ]]; then
+                    REPO_URL="$1"
+                elif [[ -z "$TARGET_DIR" ]]; then
+                    TARGET_DIR="$1"
+                else
+                    echo "❌ Error: Too many arguments" >&2
+                    show_help
+                    exit 1
+                fi
+                shift
+                ;;
+        esac
+    done
+}
+
+main() {
+    parse_args "$@"
+    
+    if [[ -z "$REPO_URL" ]]; then
+        echo "❌ Error: Repository URL is required" >&2
+        echo
+        show_help
+        exit 1
+    fi
+    
+    # Ensure CODE_ROOT directory exists
+    if [[ ! -d "$CODE_ROOT" ]]; then
+        echo "📂 Creating code root directory: $CODE_ROOT"
+        mkdir -p "$CODE_ROOT"
+    fi
+    
+    clone_repo "$REPO_URL" "$TARGET_DIR"
+}
+
+main "$@"

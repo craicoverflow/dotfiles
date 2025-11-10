@@ -1,7 +1,146 @@
 # Basic git aliases
 alias gco='git checkout'
 alias gc='git commit'
-alias grbm="git fetch --prune upstream && git rebase upstream/main || git rebase upstream/master"
+
+# Robust rebase from main/master - checks upstream first, then origin
+gum() {
+  local current_branch remote main_branch stash_created=false
+  
+  # Get current branch
+  current_branch=$(git branch --show-current 2>/dev/null)
+  if [[ -z "$current_branch" ]]; then
+    echo "❌ Error: Not on a branch (detached HEAD?)"
+    return 1
+  fi
+  
+  # If already on main/master, do a git pull instead
+  if [[ "$current_branch" == "main" || "$current_branch" == "master" ]]; then
+    echo "📍 You're on $current_branch. Pulling latest changes instead of rebasing..."
+    
+    # Determine remote (same logic as below)
+    if git remote | grep -q "^upstream$"; then
+      remote="upstream"
+      echo "🔍 Using upstream remote"
+    elif git remote | grep -q "^origin$"; then
+      remote="origin"
+      echo "🔍 Using origin remote"
+    else
+      echo "❌ No upstream or origin remote found"
+      return 1
+    fi
+    
+    echo "🔄 Pulling from $remote/$current_branch..."
+    if git pull "$remote" "$current_branch"; then
+      echo "✅ Successfully updated $current_branch"
+    else
+      echo "❌ Failed to pull from $remote/$current_branch"
+      return 1
+    fi
+    return 0
+  fi
+  
+  # Check for uncommitted changes and offer to stash
+  if ! git diff-index --quiet HEAD -- 2>/dev/null; then
+    echo "⚠️  You have uncommitted changes."
+    echo -n "Stash them and continue? [y/N]: "
+    read -r stash_confirm
+    if [[ "$stash_confirm" == "y" || "$stash_confirm" == "Y" ]]; then
+      git stash push -m "grbm auto-stash $(date '+%Y-%m-%d %H:%M:%S')" || {
+        echo "❌ Failed to stash changes"
+        return 1
+      }
+      stash_created=true
+      echo "✅ Changes stashed"
+    else
+      echo "❌ Aborting due to uncommitted changes"
+      return 1
+    fi
+  fi
+  
+  # Function to cleanup on exit
+  cleanup_on_error() {
+    if [[ "$stash_created" == "true" ]]; then
+      echo "🔄 Restoring stashed changes..."
+      git stash pop
+    fi
+  }
+  
+  # Set trap for cleanup
+  trap cleanup_on_error ERR
+  
+  # Determine remote priority: upstream first, then origin
+  if git remote | grep -q "^upstream$"; then
+    remote="upstream"
+    echo "🔍 Using upstream remote"
+  elif git remote | grep -q "^origin$"; then
+    remote="origin"
+    echo "🔍 Using origin remote"
+  else
+    echo "❌ No upstream or origin remote found"
+    cleanup_on_error
+    return 1
+  fi
+  
+  # Determine main branch (main or master)
+  echo "🔄 Fetching from $remote..."
+  git fetch --prune "$remote" || {
+    echo "❌ Failed to fetch from $remote"
+    cleanup_on_error
+    return 1
+  }
+  
+  if git ls-remote --heads "$remote" | grep -q "refs/heads/main"; then
+    main_branch="main"
+  elif git ls-remote --heads "$remote" | grep -q "refs/heads/master"; then
+    main_branch="master"
+  else
+    echo "❌ Neither 'main' nor 'master' branch found on $remote"
+    cleanup_on_error
+    return 1
+  fi
+  
+  echo "📍 Rebasing $current_branch onto $remote/$main_branch"
+  
+  # Perform the rebase
+  if git rebase "$remote/$main_branch"; then
+    echo "✅ Successfully rebased $current_branch onto $remote/$main_branch"
+    
+    # Restore stash if we created one
+    if [[ "$stash_created" == "true" ]]; then
+      echo "🔄 Restoring stashed changes..."
+      if git stash pop; then
+        echo "✅ Stashed changes restored"
+      else
+        echo "⚠️  Failed to restore stash - you may need to resolve conflicts"
+        echo "💡 Use 'git stash list' and 'git stash pop' manually"
+      fi
+    fi
+    
+    # Check if we're ahead and suggest push
+    local ahead_count
+    ahead_count=$(git rev-list --count HEAD@{upstream}..HEAD 2>/dev/null || echo "0")
+    if [[ "$ahead_count" -gt 0 ]]; then
+      echo "💡 Your branch is $ahead_count commits ahead. Consider 'git push --force-with-lease'"
+    fi
+    
+  else
+    echo "❌ Rebase failed - you may have conflicts to resolve"
+    echo "💡 After resolving conflicts:"
+    echo "   - 'git add <files>' to stage resolved files"
+    echo "   - 'git rebase --continue' to continue"
+    echo "   - 'git rebase --abort' to abort and return to original state"
+    
+    # Don't auto-restore stash during conflicts
+    if [[ "$stash_created" == "true" ]]; then
+      echo "⚠️  Your changes are still stashed. Use 'git stash pop' after resolving conflicts."
+    fi
+    
+    trap - ERR  # Remove trap since we're handling the error
+    return 1
+  fi
+  
+  trap - ERR  # Remove trap on success
+}
 alias gswm="git switch main || git switch master"
 alias gswmf="gswm && grbm"
 alias grbc="git rebase --continue"
