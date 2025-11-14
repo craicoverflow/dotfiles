@@ -1,0 +1,399 @@
+#!/bin/bash
+
+# git-pr-ls - A wrapper around gh CLI to list PRs based on various criteria
+# Usage:
+#   git-pr-ls              - List all PRs authored by you (default)
+#   git-pr-ls --review     - List all PRs pending your review
+#   git-pr-ls --team=name  - List all PRs authored by members of a team
+
+set -e
+
+# Configuration file location
+CONFIG_FILE="${GH_PR_LIST_CONFIG:-$HOME/.config/git-pr-ls/teams.yaml}"
+
+# Global flag for wide output
+WIDE_OUTPUT=false
+
+# Colors for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+MAGENTA='\033[0;35m'
+CYAN='\033[0;36m'
+NC='\033[0m' # No Color
+
+# Function to print usage
+usage() {
+    cat << EOF
+Usage: git-pr-ls [options]
+
+Options:
+    (no options)        List all open PRs authored by you (default)
+    --review            List all open PRs pending your review
+    --team=<name>       List all open PRs authored by members of a team
+    --team=all          List all open PRs authored by any team member in config
+    --wide              Show CREATED and UPDATED columns in output
+    --help, -h          Show this help message
+
+Configuration:
+    Set GH_PR_LIST_CONFIG environment variable to specify config file location
+    Default: ~/.config/git-pr-ls/teams.yaml
+
+    Config file format (YAML):
+    foo-team:
+      - user1
+      - user2
+    bar-team:
+      - user3
+      - user4
+
+Examples:
+    git-pr-ls                    # List your PRs
+    git-pr-ls --review           # List PRs pending your review
+    git-pr-ls --team=foo-team    # List PRs by team members
+    git-pr-ls --team=all         # List PRs by all team members
+    git-pr-ls --wide             # List your PRs with dates
+    git-pr-ls --review --wide    # List PRs to review with dates
+
+    # Can also be used as a git subcommand:
+    git pr-ls
+    git pr-ls --review
+    git pr-ls --team=foo-team --wide
+
+EOF
+    exit 1
+}
+
+# Function to check if gh CLI is installed
+check_gh_installed() {
+    if ! command -v gh &> /dev/null; then
+        echo -e "${RED}Error: gh CLI is not installed${NC}"
+        echo "Install it from: https://cli.github.com/"
+        exit 1
+    fi
+}
+
+# Function to check if user is authenticated
+check_gh_auth() {
+    if ! gh auth status &> /dev/null; then
+        echo -e "${RED}Error: Not authenticated with gh CLI${NC}"
+        echo "Run: gh auth login"
+        exit 1
+    fi
+}
+
+# Function to parse YAML config file (simple parser for our use case)
+parse_config() {
+    local team_name="$1"
+    local current_team=""
+    local members=()
+    
+    if [[ ! -f "$CONFIG_FILE" ]]; then
+        echo -e "${RED}Error: Config file not found: $CONFIG_FILE${NC}"
+        echo "Create a config file with team definitions."
+        exit 1
+    fi
+    
+    while IFS= read -r line; do
+        # Skip empty lines and comments
+        [[ -z "$line" || "$line" =~ ^[[:space:]]*# ]] && continue
+        
+        # Check if this is a team name (no leading spaces, ends with colon)
+        if [[ "$line" =~ ^([a-zA-Z0-9_-]+):$ ]]; then
+            current_team="${BASH_REMATCH[1]}"
+            continue
+        fi
+        
+        # Check if this is a member (starts with spaces/dash)
+        if [[ "$line" =~ ^[[:space:]]*-[[:space:]]*([a-zA-Z0-9_-]+) ]]; then
+            local member="${BASH_REMATCH[1]}"
+            if [[ "$team_name" == "all" || "$current_team" == "$team_name" ]]; then
+                members+=("$member")
+            fi
+        fi
+    done < "$CONFIG_FILE"
+    
+    if [[ ${#members[@]} -eq 0 ]]; then
+        if [[ "$team_name" != "all" ]]; then
+            echo -e "${RED}Error: Team '$team_name' not found in config or has no members${NC}"
+            exit 1
+        fi
+    fi
+    
+    printf '%s\n' "${members[@]}"
+}
+
+# Function to list all available teams
+list_teams() {
+    if [[ ! -f "$CONFIG_FILE" ]]; then
+        echo -e "${RED}Error: Config file not found: $CONFIG_FILE${NC}"
+        exit 1
+    fi
+    
+    echo -e "${CYAN}Available teams:${NC}"
+    grep -E '^[a-zA-Z0-9_-]+:$' "$CONFIG_FILE" | sed 's/:$//' | sed 's/^/  - /'
+}
+
+# Function to print table header
+print_table_header() {
+    local show_author="$1"
+    
+    if [[ "$WIDE_OUTPUT" == "true" ]]; then
+        if [[ "$show_author" == "true" ]]; then
+            printf "${CYAN}%-45s %-10s %-15s %-60s %-12s %-12s${NC}\n" "REPOSITORY" "PR #" "AUTHOR" "TITLE" "CREATED" "UPDATED"
+            printf "${CYAN}%s${NC}\n" "$(printf '%.0s─' {1..160})"
+        else
+            printf "${CYAN}%-45s %-10s %-70s %-12s %-12s${NC}\n" "REPOSITORY" "PR #" "TITLE" "CREATED" "UPDATED"
+            printf "${CYAN}%s${NC}\n" "$(printf '%.0s─' {1..155})"
+        fi
+    else
+        if [[ "$show_author" == "true" ]]; then
+            printf "${CYAN}%-45s %-10s %-15s %-70s${NC}\n" "REPOSITORY" "PR #" "AUTHOR" "TITLE"
+            printf "${CYAN}%s${NC}\n" "$(printf '%.0s─' {1..145})"
+        else
+            printf "${CYAN}%-45s %-10s %-85s${NC}\n" "REPOSITORY" "PR #" "TITLE"
+            printf "${CYAN}%s${NC}\n" "$(printf '%.0s─' {1..145})"
+        fi
+    fi
+}
+
+# Function to format and print PR row
+print_pr_row() {
+    local repo="$1"
+    local number="$2"
+    local title="$3"
+    local author="$4"
+    local created="$5"
+    local updated="$6"
+    local url="$7"
+    local show_author="$8"
+    
+    # Adjust title truncation based on mode
+    local title_width=85
+    if [[ "$show_author" == "true" ]]; then
+        title_width=70
+    fi
+    if [[ "$WIDE_OUTPUT" == "true" ]]; then
+        if [[ "$show_author" == "true" ]]; then
+            title_width=60
+        else
+            title_width=70
+        fi
+    fi
+    
+    # Truncate title if too long
+    if [[ ${#title} -gt $title_width ]]; then
+        title="${title:0:$((title_width-3))}..."
+    fi
+    
+    # Truncate repo if too long
+    if [[ ${#repo} -gt 45 ]]; then
+        repo="${repo:0:42}..."
+    fi
+    
+    # Truncate author if too long
+    if [[ ${#author} -gt 15 ]]; then
+        author="${author:0:12}..."
+    fi
+    
+    # Format PR number with padding (before adding hyperlink)
+    local pr_display=$(printf "#%-9s" "$number")
+    
+    # Create clickable URL using OSC 8 hyperlink
+    local pr_link="\e]8;;${url}\e\\${pr_display}\e]8;;\e\\"
+    
+    if [[ "$WIDE_OUTPUT" == "true" ]]; then
+        if [[ "$show_author" == "true" ]]; then
+            printf "%-45s ${BLUE}%b${NC} %-15s %-60s %-12s %-12s\n" "$repo" "$pr_link" "$author" "$title" "$created" "$updated"
+        else
+            printf "%-45s ${BLUE}%b${NC} %-70s %-12s %-12s\n" "$repo" "$pr_link" "$title" "$created" "$updated"
+        fi
+    else
+        if [[ "$show_author" == "true" ]]; then
+            printf "%-45s ${BLUE}%b${NC} %-15s %-70s\n" "$repo" "$pr_link" "$author" "$title"
+        else
+            printf "%-45s ${BLUE}%b${NC} %-85s\n" "$repo" "$pr_link" "$title"
+        fi
+    fi
+}
+
+# Function to list my PRs (authored by me)
+list_my_prs() {
+    echo -e "${CYAN}=== My Open PRs ===${NC}\n"
+    
+    local current_user
+    current_user=$(gh api user --jq '.login')
+    
+    echo -e "${YELLOW}Searching for PRs authored by @$current_user...${NC}\n"
+    
+    # Get PR data as JSON
+    local prs_json
+    prs_json=$(gh search prs \
+        --author="@me" \
+        --state=open \
+        --json number,title,repository,url,createdAt,updatedAt 2>/dev/null)
+    
+    if [[ -z "$prs_json" || "$prs_json" == "[]" ]]; then
+        echo -e "${YELLOW}No open PRs found${NC}"
+        return
+    fi
+    
+    print_table_header "false"
+    
+    # Parse JSON and print rows
+    echo "$prs_json" | jq -r '.[] | "\(.repository.nameWithOwner)|\(.number)|\(.title)|\(.createdAt)|\(.updatedAt)|\(.url)"' | while IFS='|' read -r repo number title created updated url; do
+        # Convert ISO dates to relative time (approximate)
+        created_ago=$(date -j -f "%Y-%m-%dT%H:%M:%SZ" "$created" "+%Y-%m-%d" 2>/dev/null || echo "$created")
+        updated_ago=$(date -j -f "%Y-%m-%dT%H:%M:%SZ" "$updated" "+%Y-%m-%d" 2>/dev/null || echo "$updated")
+        
+        print_pr_row "$repo" "$number" "$title" "" "$created_ago" "$updated_ago" "$url" "false"
+    done
+}
+
+# Function to list PRs pending review
+list_pending_review() {
+    echo -e "${CYAN}=== PRs Pending Your Review ===${NC}\n"
+    
+    local current_user
+    current_user=$(gh api user --jq '.login')
+    
+    echo -e "${YELLOW}Searching for PRs where you are requested as reviewer...${NC}\n"
+    
+    # Get PR data as JSON
+    local prs_json
+    prs_json=$(gh search prs \
+        --review-requested="@me" \
+        --state=open \
+        --json number,title,repository,author,url,createdAt,updatedAt 2>/dev/null)
+    
+    if [[ -z "$prs_json" || "$prs_json" == "[]" ]]; then
+        echo -e "${YELLOW}No PRs found pending your review${NC}"
+        return
+    fi
+    
+    print_table_header "true"
+    
+    # Parse JSON and print rows
+    echo "$prs_json" | jq -r '.[] | "\(.repository.nameWithOwner)|\(.number)|\(.title)|\(.author.login)|\(.createdAt)|\(.updatedAt)|\(.url)"' | while IFS='|' read -r repo number title author created updated url; do
+        # Convert ISO dates to relative time (approximate)
+        created_ago=$(date -j -f "%Y-%m-%dT%H:%M:%SZ" "$created" "+%Y-%m-%d" 2>/dev/null || echo "$created")
+        updated_ago=$(date -j -f "%Y-%m-%dT%H:%M:%SZ" "$updated" "+%Y-%m-%d" 2>/dev/null || echo "$updated")
+        
+        print_pr_row "$repo" "$number" "$title" "$author" "$created_ago" "$updated_ago" "$url" "true"
+    done
+}
+
+# Function to list PRs by team members
+list_by_team() {
+    local team_name="$1"
+    
+    if [[ -z "$team_name" ]]; then
+        echo -e "${RED}Error: Team name required${NC}"
+        usage
+    fi
+    
+    echo -e "${CYAN}=== PRs by Team: $team_name ===${NC}\n"
+    
+    # Get team members from config (portable way)
+    local members=()
+    while IFS= read -r member; do
+        [[ -n "$member" ]] && members+=("$member")
+    done < <(parse_config "$team_name")
+    
+    if [[ ${#members[@]} -eq 0 ]]; then
+        echo -e "${YELLOW}No members found for team: $team_name${NC}"
+        exit 1
+    fi
+    
+    echo -e "${YELLOW}Team members: ${members[*]}${NC}\n"
+    
+    print_table_header "true"
+    
+    local found_any=false
+    
+    # Search for PRs by each member
+    for member in "${members[@]}"; do
+        local prs_json
+        prs_json=$(gh search prs \
+            --author="$member" \
+            --state=open \
+            --json number,title,repository,url,createdAt,updatedAt 2>/dev/null)
+        
+        if [[ -n "$prs_json" && "$prs_json" != "[]" ]]; then
+            found_any=true
+            # Parse JSON and print rows
+            echo "$prs_json" | jq -r '.[] | "\(.repository.nameWithOwner)|\(.number)|\(.title)|\(.createdAt)|\(.updatedAt)|\(.url)"' | while IFS='|' read -r repo number title created updated url; do
+                # Convert ISO dates to relative time (approximate)
+                created_ago=$(date -j -f "%Y-%m-%dT%H:%M:%SZ" "$created" "+%Y-%m-%d" 2>/dev/null || echo "$created")
+                updated_ago=$(date -j -f "%Y-%m-%dT%H:%M:%SZ" "$updated" "+%Y-%m-%d" 2>/dev/null || echo "$updated")
+                
+                print_pr_row "$repo" "$number" "$title" "$member" "$created_ago" "$updated_ago" "$url" "true"
+            done
+        fi
+    done
+    
+    if [[ "$found_any" == "false" ]]; then
+        echo -e "${YELLOW}No open PRs found for team members${NC}"
+    fi
+}
+
+# Main script logic
+main() {
+    # Check for help first (before auth check)
+    if [[ "$1" == "--help" || "$1" == "-h" ]]; then
+        usage
+    fi
+    
+    check_gh_installed
+    check_gh_auth
+    
+    local action="my_prs"
+    local team_name=""
+    
+    # Parse arguments
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            --review)
+                action="review"
+                shift
+                ;;
+            --team=*)
+                action="team"
+                team_name="${1#*=}"
+                if [[ -z "$team_name" ]]; then
+                    echo -e "${RED}Error: --team requires a team name${NC}\n"
+                    usage
+                fi
+                shift
+                ;;
+            --wide)
+                WIDE_OUTPUT=true
+                shift
+                ;;
+            --help|-h)
+                usage
+                ;;
+            *)
+                echo -e "${RED}Error: Unknown option: $1${NC}\n"
+                usage
+                ;;
+        esac
+    done
+    
+    # Execute the action
+    case "$action" in
+        my_prs)
+            list_my_prs
+            ;;
+        review)
+            list_pending_review
+            ;;
+        team)
+            list_by_team "$team_name"
+            ;;
+    esac
+}
+
+main "$@"
+
